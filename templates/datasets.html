@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<h1>Available data</h1>
+
+<body>
+
+{% for t in id %}
+    <div id = "one_data_div">
+
+    {% for i in t %}
+        <h3>{{ i }}</h3>
+    {% endfor %}
+    </div>
+{% endfor %}
+
+</body>
+</html>
