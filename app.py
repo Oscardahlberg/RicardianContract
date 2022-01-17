@@ -7,7 +7,9 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_cors import CORS
 
-from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user
+from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user, new_dataset, \
+    data_collection
+import tables
 
 app = Flask(__name__)
 
@@ -23,10 +25,6 @@ login_manager.init_app(app)
 @app.route('/login')
 def logonPage():
     return render_template("login.html")
-
-@app.route('/create')
-def createAccPage():
-    return render_template("createAcc.html")
 
 
 @app.route('/login', methods=['POST'])
@@ -51,6 +49,11 @@ def login():
 
 # Create a new user
 
+@app.route('/create')
+def create_page():
+    return render_template("createAcc.html")
+
+
 @app.route('/create', methods=['POST'])
 def create_user():
     if request.method == 'POST':
@@ -59,6 +62,7 @@ def create_user():
         password = request.form.get('password')
         save_user(username, email, password, password)
         return {'message' : "User successfully created"}, 200
+
 
 # User logout
 
@@ -71,6 +75,12 @@ def logout():
 
 # Start negotiation:
 # To be done: Verify validity of inputs, for example, x permision for y database is possible
+
+@app.route("/negotiate")
+@login_required
+def nego():
+    return render_template("nego.html")
+
 
 @app.route("/negotiate", methods=['POST'])
 @login_required
@@ -97,6 +107,8 @@ def new_neg():
 @app.route("/negotiate/<req_id>", methods=['GET', 'POST'])
 @login_required
 def neg(req_id):
+    render_template("nego_item.html", item = "req_id")
+
     req = get_neg(req_id)
     print(req)
     if request.method == 'POST':
@@ -146,6 +158,51 @@ def cancel(req_id):
 
     else:
         return {"message": 'You are not authorized to perform this task'}, 403
+
+
+@app.route("/new_data")
+@login_required
+def new_data_page():
+    return render_template("new_dataset.html")
+
+
+# Only accesible to the owner of such resource, this route cancels the negotiation.
+@app.route("/new_data", methods=['POST'])
+@login_required
+def new_data():
+    try:
+        name = request.form.get('data_name')
+        canRead = True if request.form.get('can_read') == 'Yes' else False
+        canModify = True if request.form.get('can_mod') == 'Yes' else False
+        canDelete = True if request.form.get('can_del') == 'Yes' else False
+
+        new_dataset(name, current_user.username, canRead, canModify, canDelete)
+
+        return {"message": "New dataset has been created"}, 200
+    except Exception as e:
+        print(e)
+
+
+@app.route("/search_data")
+def data_page():
+    all_data = data_collection.find()
+    try:
+        full_table = []
+        for data in all_data:
+            table = [data["name"],
+                     data["owner"],
+                     data["permissions"]["read"],
+                     data["permissions"]["modify"],
+                     data["permissions"]["delete"]]
+            full_table.append(table)
+            print(table)
+        return render_template("datasets.html", id=full_table)
+    except Exception as e:
+        print(e)
+        return e
+
+
+
 
 
 @login_manager.user_loader
