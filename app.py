@@ -7,7 +7,10 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_cors import CORS
 
-from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user
+import to_list
+from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user, data_collection, \
+    new_dataset, users_collection
+import client
 
 app = Flask(__name__)
 
@@ -20,13 +23,25 @@ login_manager.init_app(app)
 
 # User login receives form params username and password
 
+
+@app.route('/')
+def home():
+    name = ""
+    user_id = ""
+    user_sign = ""
+    if current_user.is_authenticated:
+        name = current_user.username
+        try:
+            user_id = users_collection.find({"username": "" + name})[0]["_id"]
+        except Exception as e:
+            print(e)
+            return e
+    return render_template("index.html", user=name, user_id=user_id)
+
+
 @app.route('/login')
 def logonPage():
     return render_template("login.html")
-
-@app.route('/create')
-def createAccPage():
-    return render_template("createAcc.html")
 
 
 @app.route('/login', methods=['POST'])
@@ -51,6 +66,11 @@ def login():
 
 # Create a new user
 
+@app.route('/create')
+def create_page():
+    return render_template("createAcc.html")
+
+
 @app.route('/create', methods=['POST'])
 def create_user():
     if request.method == 'POST':
@@ -58,7 +78,8 @@ def create_user():
         email = request.form.get('email')
         password = request.form.get('password')
         save_user(username, email, password, password)
-        return {'message' : "User successfully created"}, 200
+        return {'message': "User successfully created"}, 200
+
 
 # User logout
 
@@ -72,18 +93,24 @@ def logout():
 # Start negotiation:
 # To be done: Verify validity of inputs, for example, x permision for y database is possible
 
-@app.route("/negotiate", methods=['POST'])
+@app.route("/negotiate/<data_id>/create")
 @login_required
-def new_neg():
+def new_nego(data_id):
+    return render_template("nego.html", data_id=data_id)
+
+
+@app.route("/negotiate/<data_id>/submit", methods=['POST'])
+@login_required
+def new_nego_req(data_id):
     try:
-        item = request.form.get('item')
+        data_name = data_collection.find({"_id": ObjectId(data_id)})[0]["name"]
         st_date = request.form.get('st_date')
         end_date = request.form.get('end_date')
         role = request.form.get('role')
         offering = request.form.get('offering')
         # The following function may be changed to iterate if multiple roles are requested
 
-        neg_id = new_permi(current_user.username, item, st_date, end_date, role, offering)
+        neg_id = new_permi(current_user.username, data_name, st_date, end_date, role, offering)
 
         print(neg_id)
         return {"message": "The negotiation with id {} has been created".format(str(neg_id))}, 200
@@ -92,9 +119,10 @@ def new_neg():
 
 
 # Negotiation or back and forth of proposals:
-# To be done: Verify that new proposal is different to the previous one and that the porposer is different than the one who proposed the last
+# To be done: Verify that new proposal is different to
+# the previous one and that the porposer is different than the one who proposed the last
 
-@app.route("/negotiate/<req_id>", methods=['GET', 'POST'])
+@app.route("/negotiate/<req_id>/initiate", methods=['GET', 'POST'])
 @login_required
 def neg(req_id):
     req = get_neg(req_id)
@@ -143,9 +171,55 @@ def cancel(req_id):
     if current_user.username == req['provider']:
         change_status(req, 'reject')
         return {"message": "The negotiation with id {} has been reject".format(str(req['_id']))}, 200
-
     else:
         return {"message": 'You are not authorized to perform this task'}, 403
+
+
+@app.route("/new_data")
+@login_required
+def new_data_page():
+    return render_template("new_dataset.html")
+
+
+# Only accesible to the owner of such resource, this route cancels the negotiation.
+@app.route("/new_data", methods=['POST'])
+@login_required
+def new_data():
+    try:
+        name = request.form.get('data_name')
+        canRead = True if request.form.get('can_read') == 'Yes' else False
+        canModify = True if request.form.get('can_mod') == 'Yes' else False
+        canDelete = True if request.form.get('can_del') == 'Yes' else False
+
+        new_dataset(name, current_user.username, canRead, canModify, canDelete)
+
+        return {"message": "New dataset has been created"}, 200
+    except Exception as e:
+        print(e)
+
+
+@app.route("/search_data")
+def data_page():
+    try:
+        return render_template("datasets.html",
+                               data_list=to_list.data_to_list(data_collection.find()),
+                               title="Available data for contract",
+                               username=current_user.username)
+    except Exception as e:
+        return e
+
+
+@app.route("/<user_id>/data")
+def users_data_page(user_id):
+    try:
+        user_data = data_collection.find({"owner": users_collection.find({"_id": ObjectId(user_id)})[0]["username"]})
+        return render_template("datasets.html",
+                               data_list=to_list.data_to_list(user_data),
+                               title="Data owned by: " + current_user.username,
+                               username=current_user.username)
+    except Exception as e:
+        print(e)
+        return e
 
 
 @login_manager.user_loader
@@ -153,10 +227,7 @@ def load_user(username):
     return get_user(username)
 
 
-@app.route('/')
-def home():
-    return render_template("index.html")
-
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
+    # app.run(port=8086, debug=True)
+
