@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<h1>Negotiate!</h1>
+<h1>Create contract</h1>
 
 <body>
 
-<form action="/negotiate" method="POST">
-    <label for="item">Item:</label><br>
-    <input type="text" id="item" name="item"><br>
-
+<form action="/negotiate/{{data_id}}/submit" method="POST">
     <label for="st_date">Start date:</label><br>
     <input type="text" id="st_date" name="st_date"><br>
 
@@ -21,7 +18,7 @@
     <label for="offering">Offer:</label><br>
     <input type="text" id="offering" name="offering"><br><br>
 
-    <input type="submit" value="Submit">
+    <input type="submit" value="Submit contract">
 </form>
 
 </body>
