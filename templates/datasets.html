@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    #one_data_div {
+        display: block;
+        border-radius: 1px;
+        background-color: lightgray;
+        padding: 10px;
+    }
+    #name {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+    #owner {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+    #permissions {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+</style>
+
+<h1>{{ title }}</h1>
+
+<body>
+
+{% for data_index in data_list %}
+<div id = "one_data_div">
+
+    <p id="name">Name: <b>{{ data_index[1] }}</b></p>
+    <p id="owner">Owner: <b>{{ data_index[2] }}</b></p>
+    <!-- IGNORE ERRORS :) -->
+    <p id="permissions">Readable?: <b>{{ data_index[3] }}</b></p>
+    <p id="permissions">Modifiable?: <b>{{ data_index[4] }}</b></p>
+    <p id="permissions">Deletable?: <b>{{ data_index[5] }}</b></p>
+
+    {% if username != data_index[2] %}
+    <form action="/negotiate/{{data_index[0]}}/create">
+        <input type="submit" value="Negotiate contract">
+    </form>
+    {% endif %}
+
+</div>
+{% endfor %}
+
+</body>
+</html>
