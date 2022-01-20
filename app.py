@@ -9,7 +9,7 @@ from flask_cors import CORS
 
 import to_list
 from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user, data_collection, \
-    new_dataset, users_collection
+    new_dataset, users_collection, negotiations_collection, access_collection
 import client
 
 app = Flask(__name__)
@@ -93,6 +93,41 @@ def logout():
 # Start negotiation:
 # To be done: Verify validity of inputs, for example, x permision for y database is possible
 
+
+@app.route("/<user_id>/nego")
+@login_required
+def user_negotiations(user_id):
+    try:
+        nego_as_demander = access_collection.find({"demander": users_collection.find({"_id": ObjectId(user_id)})[0]["username"]})
+        demander_list = to_list.access_perm_to_list(nego_as_demander, "submitted", "submitted")
+        nego_as_provider = access_collection.find(
+            {"provider": users_collection.find({"_id": ObjectId(user_id)})[0]["username"]})
+        provider_list = to_list.access_perm_to_list(nego_as_provider, "submitted", "submitted")
+        combined_list = demander_list + provider_list
+    except Exception as e:
+        print(e)
+        return e
+
+    return render_template("user_nego.html", nego_list=combined_list, title="Pending negotations", user=current_user.username)
+
+
+@app.route("/<user_id>/completed")
+@login_required
+def user_completed_negosiations(user_id):
+    try:
+        nego_as_demander = access_collection.find({"demander": users_collection.find({"_id": ObjectId(user_id)})[0]["username"]})
+        demander_list = to_list.access_perm_to_list(nego_as_demander, "accepted", "rejected")
+        nego_as_provider = access_collection.find(
+            {"provider": users_collection.find({"_id": ObjectId(user_id)})[0]["username"]})
+        provider_list = to_list.access_perm_to_list(nego_as_provider, "accepted", "rejected")
+        combined_list = demander_list + provider_list
+    except Exception as e:
+        print(e)
+        return e
+
+    return render_template("user_nego.html", nego_list=combined_list, title="Completed negotiations",user=current_user.username)
+
+
 @app.route("/negotiate/<data_id>/create")
 @login_required
 def new_nego(data_id):
@@ -122,7 +157,7 @@ def new_nego_req(data_id):
 # To be done: Verify that new proposal is different to
 # the previous one and that the porposer is different than the one who proposed the last
 
-@app.route("/negotiate/<req_id>/initiate", methods=['GET', 'POST'])
+@app.route("/negotiate/<req_id>/respond", methods=['GET', 'POST'])
 @login_required
 def neg(req_id):
     req = get_neg(req_id)
@@ -150,29 +185,47 @@ def neg(req_id):
 @app.route("/negotiate/<req_id>/accept", methods=['GET'])
 @login_required
 def accept(req_id):
-    req = get_neg(req_id)
-    if current_user.username == req['provider']:
-        change_status(req_id, 'accept', current_user.username)
-        s = sign_contract(req_id)
-        print(s)
-        ## Add function for contract writing
-        return {"message": "The negotiation with id {} has been accepted.".format(str(req['_id'])),
-                "Contract": "{}".format(s)}, 200
+    try:
+        req = get_neg(req_id)
+        if current_user.username == req['provider']:
+            change_status(req_id, 'accept', current_user.username)
+            s = sign_contract(req_id)
+            print(s)
+            ## Add function for contract writing
+            return {"message": "The negotiation with id {} has been accepted.".format(str(req['_id'])),
+                    "Contract": "{}".format(s)}, 200
 
-    else:
-        return {"message": 'You are not authorized to perform this task'}, 403
+        else:
+            return {"message": 'You are not authorized to perform this task'}, 403
+    except Exception as e:
+        print(e)
+        return e
 
+
+"""
+# Only accesible to the owner of such resource, this route cancels the negotiation.
+@app.route("/negotiate/<req_id>/cancel")
+@login_required
+def canceled(req_id):
+    return render_template("index.html")
+"""
 
 # Only accesible to the owner of such resource, this route cancels the negotiation.
 @app.route("/negotiate/<req_id>/cancel", methods=['GET'])
 @login_required
 def cancel(req_id):
-    req = get_neg(req_id)
-    if current_user.username == req['provider']:
-        change_status(req, 'reject')
-        return {"message": "The negotiation with id {} has been reject".format(str(req['_id']))}, 200
-    else:
-        return {"message": 'You are not authorized to perform this task'}, 403
+    try:
+        req = get_neg(req_id)
+        if current_user.username == req['provider']:
+            print(req["provider"])
+            change_status(req_id, 'reject', current_user.username)
+            print(req["provider"])
+            return {"message": "The negotiation with id {} has been reject".format(str(req['_id']))}, 200
+        else:
+            return {"message": 'You are not authorized to perform this task'}, 403
+    except Exception as e:
+        print(e)
+        return e
 
 
 @app.route("/new_data")
