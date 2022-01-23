@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<h1>Contract for: {{ item }}</h1>
+<h2>Info</h2>
+<h3>User who requested: {{ demander }}</h3>
+<h3>Users role: {{ role }}</h3>
+<h3>Request made: {{ date }}</h3>
+
+<h2>Their proposal: </h2>
+
+<h3>Start date: {{ start_date }}</h3>
+<h3>End date: {{ end_date }}</h3>
+<h3>Offer: {{ offer }}</h3>
+
+<body>
+
+<h2>Your counter proposal: </h2>
+
+<form action="/negotiate/{{ req_id }}/respond" method="POST">
+    <label for="st_date">Start date: </label><br>
+    <input type="text" id="st_date" name="st_date" value={{start_date}}><br>
+
+    <label for="end_date">End date: </label><br>
+    <input type="text" id="end_date" name="end_date" value={{end_date}}><br>
+
+    <label for="offering">Offer: </label><br>
+    <input type="text" id="offering" name="offering" value={{offer}}><br><br>
+
+    <!-- Invisible "checkbox"es just to pass more info without the user knowing it -->
+    <input type="checkbox"  style="display:none" name="item" value={{item}} checked/>
+    <input type="checkbox"  style="display:none" name="role" value={{role}} checked/>
+
+    <input type="submit" value="Submit new contract">
+</form>
+
+<form action="/negotiate/{{ req_id }}/accept" method="GET">
+    <input type="submit" value="Accept their contract">
+</form>
+
+<form action="/negotiate/{{ req_id }}/cancel" method="GET">
+    <input type="submit" value="Reject their contract">
+</form>
+
+</body>
+</html>
