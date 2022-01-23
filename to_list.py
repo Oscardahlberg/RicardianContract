@@ -12,19 +12,23 @@ def data_to_list(all_data):
     return full_table
 
 
-def access_perm_to_list(all_nego, status0, status1):
+def access_perms_to_list(all_nego, status):
     full_table = []
     for nego in all_nego:
-        if nego["status"] == status0 or nego["status"] == status1:
-            table = [nego["_id"],
-                     nego["demander"],
-                     nego["provider"],
-                     nego["creation_date"],
-                     nego["offer"],
-                     nego["request_details"]["item"],
-                     nego["request_details"]["start_date"],
-                     nego["request_details"]["end_date"],
-                     nego["request_details"]["role"],
-                     nego["status"]]
-            full_table.append(table)
+        if nego["status"] in status:
+            full_table.append(access_perm_to_list(nego))
     return full_table
+
+
+def access_perm_to_list(nego):
+    table = [nego["_id"],                            # 0
+             nego["demander"],                       # 1
+             nego["provider"],                       # 2
+             nego["creation_date"],                  # 3
+             nego["offer"],                          # 4
+             nego["request_details"]["item"],        # 5
+             nego["request_details"]["start_date"],  # 6
+             nego["request_details"]["end_date"],    # 7
+             nego["request_details"]["role"],        # 8
+             nego["status"]]                         # 9
+    return table

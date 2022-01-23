@@ -37,7 +37,7 @@
     <p id="permissions">Deletable?: <b>{{ data_index[5] }}</b></p>
 
     {% if username != data_index[2] %}
-    <form action="/negotiate/{{data_index[0]}}/create">
+    <form action="/negotiate/{{ data_index[0] }}/create">
         <input type="submit" value="Negotiate contract">
     </form>
     {% endif %}

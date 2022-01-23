@@ -13,7 +13,8 @@ import json
 from bson import ObjectId
 
 # Change this to your mongodb cluster (in case you want to use it) for you to see and modify the database
-client = MongoClient("mongodb+srv://oscar:test123@cluster0.6hczg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", ssl=True)
+client = MongoClient("mongodb+srv://oscar:test123@cluster0.6hczg.mongodb.net/"
+                     "myFirstDatabase?retryWrites=true&w=majority", ssl=True)
 
 # This will allow you to access the databases, in case more databases are needed add them here, no need to create a
 # struture a priori like SQL, when data is added to a non existing database it will create it.
@@ -35,7 +36,8 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-# Run this function when you want to create a new user, you can also create a registration view in the api which call this function, is up to you.
+# Run this function when you want to create a new user,
+# you can also create a registration view in the api which call this function, is up to you.
 def save_user(username, email, password, sign):
     password_hash = generate_password_hash(password)
     salt = uuid.uuid4().hex
@@ -48,7 +50,9 @@ def save_user(username, email, password, sign):
 # In case you want to create aditional templates you would need to modify and run this function.
 def add_template():
     temp_type = 'single_buyer'
-    temp = "Hereby I $seller authorize the access to $buyer for the following databases: $data from $start_date to $end_date for the following roles $authorized_roles. Seller signature $seller_sign, Buyer signature $buyer_sign"
+    temp = "Hereby I $seller authorize the access to $buyer for the following databases:" \
+           " $data from $start_date to $end_date for the following roles $authorized_roles." \
+           " Seller signature $seller_sign, Buyer signature $buyer_sign"
     templates_collection.insert_one({'temp_type': temp_type, 'template': temp})
 
 
@@ -63,10 +67,11 @@ def get_user(username):
 def new_permi(username, item, st_date, end_date, role, offering):
     status = 'submitted'
     access_req = access_collection.insert_one(
-        {'demander': username, 'provider': get_provider(item), 'creation_date': datetime.now(), 'offer': offering,
-         'request_details':
+        {'demander': username, 'provider': get_provider(item), 'creation_date': datetime.now(),
+         'offer': offering, 'request_details':
              {'item': item, 'start_date': st_date, 'end_date': end_date, 'role': role}, 'status': status}).inserted_id
-    ## Add new nego
+
+    # Add new nego
     offer(access_req, username, item, st_date, end_date, role, offering)
     return access_req
 
@@ -84,7 +89,6 @@ def offer(req_id, username, item, st_date, end_date, role, offering):
 def get_provider(name):
     dataset = data_collection.find_one({'name': name})
     owner = dataset['owner']
-    print(owner)
     return owner
 
 
@@ -103,9 +107,9 @@ def change_status(req_id, flag, user):
             access_collection.update_one({'_id': ObjectId(req_id)}, {'$set': {'status': 'counter_offer'}})
             print('counter offer')
         else:
-            access_collection.update_one({'_id': ObjectId(req_id)}, {'$set': {'status': 'offer'}})
+            access_collection.update_one({'_id': ObjectId(req_id)}, {'$set': {'status': 'new_offer'}})
             print('new offer')
-    return ('finished')
+    return 'finished'
 
 
 # This is used to add new datasets to the database
@@ -134,11 +138,11 @@ def get_sign(uid):
 
 # Updates the access permission
 def update(req_id, offer, item, start_date, end_date, role):
-    access_collection.update({'_id': ObjectId(req_id)}, {'$set': {'offer': offer,
-                                                                  'request_details.item': item,
-                                                                  'request_details.start_date': start_date,
-                                                                  'request_details.end_date': end_date,
-                                                                  'request_details.role': role}})
+    access_collection.update_one({'_id': ObjectId(req_id)}, {'$set': {'offer': offer,
+                                                                      'request_details.item': item,
+                                                                      'request_details.start_date': start_date,
+                                                                      'request_details.end_date': end_date,
+                                                                      'request_details.role': role}})
 
 
 # Signs the contract and returns it

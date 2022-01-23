@@ -1,15 +1,29 @@
 <h1>Main</h1>
 
+{% if not user %}
+    {% if msg %}
+        <h2>{{ msg }}</h2><br>
+    {% endif %}
+{% endif %}
+
 {% if user %}
-<h2>Welcome {{ user }}</h2>
-<a href="/logout">Logout</a><br>
-<a href="/new_data">Create new data</a><br>
-<a href="/{{ user_id }}/data">View your data</a><br>
-<a href="/{{ user_id }}/nego">Your ongoing negotiations</a><br>
-<a href="/{{ user_id }}/completed">Your completed contracts</a><br>
+
+
+    {% if not msg %}
+        <h2>Welcome {{ user }}</h2>
+    {% else %}
+        <h2>{{ msg }}</h2><br>
+    {% endif %}
+
+
+    <a href="/logout">Logout</a><br>
+    <a href="/new_data">Create new data</a><br>
+    <a href="/{{ user_id }}/data">View your data</a><br>
+    <a href="/{{ user_id }}/nego">Your ongoing negotiations</a><br>
+    <a href="/{{ user_id }}/completed">Your completed contracts</a><br>
 {% else %}
-<a href="/create">Create a account</a><br>
-<a href="/login">Login</a><br>
+    <a href="/create">Create a account</a><br>
+    <a href="/login">Login</a><br>
 {% endif %}
 
 <a href="/search_data">See all available data</a>

@@ -19,41 +19,49 @@
 <body>
 
 {% for nego_index in nego_list %}
-<div id = "one_nego_div">
+    <div id = "one_nego_div">
 
-    <p id="Demander">Demander: <b>{{ nego_index[1] }}</b></p>
-    <p id="Provider">Provider: <b>{{ nego_index[2] }}</b></p>
-    <p id="Creation">Creation date: <b>{{ nego_index[3] }}</b></p>
-    <p id="Offer">Offer: <b>{{ nego_index[4] }}</b></p>
-    <!-- IGNORE ERRORS :) -->
-    <p id="Item">Data name: <b>{{ nego_index[5] }}</b></p>
-    <p id="Start_date">Start date: <b>{{ nego_index[6] }}</b></p>
-    <p id="End_date">End date: <b>{{ nego_index[7] }}</b></p>
-    <p id="Role">Role: <b>{{ nego_index[8] }}</b></p>
-    <p id="Status">Status: <b>{{ nego_index[9] }}</b></p>
+        <p id="Demander">Demander: <b>{{ nego_index[1] }}</b></p>
+        <p id="Provider">Provider: <b>{{ nego_index[2] }}</b></p>
+        <p id="Creation">Creation date: <b>{{ nego_index[3] }}</b></p>
+        <p id="Offer">Offer: <b>{{ nego_index[4] }}</b></p>
+        <!-- IGNORE ERRORS :) -->
+        <p id="Item">Data name: <b>{{ nego_index[5] }}</b></p>
+        <p id="Start_date">Start date: <b>{{ nego_index[6] }}</b></p>
+        <p id="End_date">End date: <b>{{ nego_index[7] }}</b></p>
+        <p id="Role">Role: <b>{{ nego_index[8] }}</b></p>
+        <p id="Status">Status: <b>{{ nego_index[9] }}</b></p>
 
-    {% if nego_index[9] == "submitted" %}
-        {% if nego_index[2] == user %}
+
+        {% if (nego_index[9] == "new_offer" or nego_index[9] == "submitted") and nego_index[2] == user %}
             <form action="/negotiate/{{ nego_index[0] }}/respond">
                 <input type="submit" value="Respond">
             </form>
-        {% endif %}
 
-        {% if nego_index[2] == user %}
             <form action="/negotiate/{{ nego_index[0] }}/accept" method="GET">
                 <input type="submit" value="Accept">
             </form>
-        {% endif %}
 
-        {% if nego_index[2] == user %}
             <form action="/negotiate/{{ nego_index[0] }}/cancel" method="GET">
-                <input type="submit" value="Cancel">
+                <input type="submit" value="Decline">
             </form>
         {% endif %}
-    {% endif %}
 
+        {% if nego_index[9] == "counter_offer" and nego_index[1] == user %}
+            <form action="/negotiate/{{ nego_index[0] }}/respond">
+                <input type="submit" value="Respond">
+            </form>
 
-</div>
+            <form action="/negotiate/{{ nego_index[0] }}/accept" method="GET">
+                <input type="submit" value="Accept">
+            </form>
+
+            <form action="/negotiate/{{ nego_index[0] }}/cancel" method="GET">
+                <input type="submit" value="Decline">
+            </form>
+        {% endif %}
+
+    </div>
 {% endfor %}
 
 </body>
