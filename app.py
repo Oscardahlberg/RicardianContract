@@ -183,8 +183,7 @@ def new_nego_req(data_id):
 def neg_page(req_id):
 
     try:
-        neg = get_neg(req_id)
-        neg_info = to_list.access_perm_to_list(neg)
+        neg_info = to_list.access_perm_to_list(get_neg(req_id))
 
         return render_template("counter_nego.html",
                                req_id=neg_info[0],
@@ -239,7 +238,7 @@ def accept(req_id):
         req = get_neg(req_id)
         if current_user.username in (req['provider'] or req['demander']):
             change_status(req_id, 'accept', current_user.username)
-            s = sign_contract(req_id)
+            sign_contract(req_id)
             return home("The negotiation has been accepted.")
 
             # TODO:CALL TO GRAPH TO LINK CURRENT_USER TO DATASET WITH ID REQ_ID
