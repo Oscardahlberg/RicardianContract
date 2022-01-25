@@ -33,7 +33,7 @@ def home(*argv):
     if current_user.is_authenticated:
         name = current_user.username
         try:
-            user_id = users_collection.find({"username": "" + name})[0]["_id"]
+            user_id = users_collection.find_one({"username": name})["_id"]
         except Exception as e:
             print(e)
             return e
@@ -50,7 +50,6 @@ def login_page():
 def login():
     if current_user.is_authenticated:
         return home("The user {} is already authenticated".format(current_user.username))
-        # return {"message": "The user {} is already authenticated".format(current_user.username)}, 200
 
     message = ''
     if request.method == 'POST':
@@ -60,9 +59,8 @@ def login():
 
         if user and user.check_password(password_input):
             login_user(user)
-
             return home("User {} has been authenticated".format(str(current_user.username)))
-            # return {"message": "User {} has been authenticated".format(str(current_user.username))}, 200
+
         else:
             message = 'Failed to login!'
     return home(message)
@@ -337,6 +335,6 @@ if __name__ == '__main__':
     except TypeError as a:
         add_template()
 
-    # TODO: CALL TO GET SESSION ID AND CREATE PERMANENT CLASSES
+    # TODO: CALL TO GET SESSION ID AND THE CREATE PERMANENT CLASSES
 
     app.run(host='0.0.0.0', debug=True)
