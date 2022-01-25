@@ -90,6 +90,8 @@ def create_user():
             print(e)
             return e
 
+        # TODO:CALL TO CREATE USER IN GRAPH
+
         return home("User successfully created")
         # return {'message': "User successfully created"}, 200
 
@@ -225,14 +227,10 @@ def neg(req_id):
                 update(req_id, offering, item, st_date, end_date, role)
                 change_status(req_id, 1, current_user.username)
                 return home("New offer has been submitted")
-                # return {"message": "New offer submited for request with id {}".format(str(req['_id']))}, 200
             else:
                 return home("No more offers can be made")
-                # return {"message": "The negotiation {} has concluded no more offers can be made".format(
-                #    str(req['_id']))}, 403
         else:
             return home("You are not part of the current negotiation")
-            # return {"message": 'You are not part of the current negotiation'}, 403
 
 
 # Only accesible to the owner of such resource, this route accepts the negotiation and begins the contract signing
@@ -244,8 +242,9 @@ def accept(req_id):
         if current_user.username in (req['provider'] or req['demander']):
             change_status(req_id, 'accept', current_user.username)
             s = sign_contract(req_id)
-            # Add function for contract writing
-            return home("The negotiation with id {} has been accepted.")
+            return home("The negotiation has been accepted.")
+
+            # TODO:CALL TO GRAPH TO LINK CURRENT_USER TO DATASET WITH ID REQ_ID
 
         else:
             return home("You are not authorized to perform this task")
@@ -265,10 +264,8 @@ def cancel(req_id):
             change_status(req_id, 'reject', current_user.username)
             print(req["provider"])
             return home("The contract has been rejected")
-            # return {"message": "The negotiation with id {} has been reject".format(str(req['_id']))}, 200
         else:
             return home("You are not authorized to perform this task")
-            # return {"message": 'You are not authorized to perform this task'}, 403
     except Exception as e:
         print(e)
         return e
@@ -296,8 +293,9 @@ def new_data():
 
         new_dataset(name, current_user.username, can_read, can_modify, can_delete)
 
+        # TODO:CREATE DATASET NODE AND LINK CURRENT_USER TO IT SINCE HE IS OWNER
+
         return home("New dataset has been created")
-        # return {"message": "New dataset has been created"}, 200
     except Exception as e:
         print(e)
         return e
@@ -338,4 +336,7 @@ if __name__ == '__main__':
         get_template("single_buyer")
     except TypeError as a:
         add_template()
+
+    # TODO: CALL TO GET SESSION ID AND CREATE PERMANENT CLASSES
+
     app.run(host='0.0.0.0', debug=True)
