@@ -292,7 +292,7 @@ def new_data():
 
         can_read = True if request.form.get('can_read') == 'Yes' else False
         can_modify = True if request.form.get('can_mod') == 'Yes' else False
-        can_delete = True if request.form.get('can_del') == 'Yes' else False
+        can_delete = True if request.form.get('can_delete') == 'Yes' else False
 
         new_dataset(name, current_user.username, can_read, can_modify, can_delete)
 
