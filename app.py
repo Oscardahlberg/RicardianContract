@@ -9,7 +9,7 @@ from flask_cors import CORS
 
 import to_list
 from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user, data_collection, \
-    new_dataset, users_collection, negotiations_collection, access_collection
+    new_dataset, users_collection, negotiations_collection, access_collection, get_template, add_template
 import client
 
 app = Flask(__name__)
@@ -244,25 +244,14 @@ def accept(req_id):
         if current_user.username in (req['provider'] or req['demander']):
             change_status(req_id, 'accept', current_user.username)
             s = sign_contract(req_id)
-            print(s)
             # Add function for contract writing
-            return {"message": "The negotiation with id {} has been accepted.".format(str(req['_id'])),
-                    "Contract": "{}".format(s)}, 200
+            return home("The negotiation with id {} has been accepted.")
 
         else:
-            return {"message": 'You are not authorized to perform this task'}, 403
+            return home("You are not authorized to perform this task")
     except Exception as e:
         print(e)
         return e
-
-
-"""
-# Only accesible to the owner of such resource, this route cancels the negotiation.
-@app.route("/negotiate/<req_id>/cancel")
-@login_required
-def canceled(req_id):
-    return render_template("index.html")
-"""
 
 
 # Only accesible to the owner of such resource, this route cancels the negotiation.
@@ -345,4 +334,8 @@ def load_user(username):
 
 
 if __name__ == '__main__':
+    try:
+        get_template("single_buyer")
+    except TypeError as a:
+        add_template()
     app.run(host='0.0.0.0', debug=True)

@@ -50,9 +50,10 @@ def save_user(username, email, password, sign):
 # In case you want to create aditional templates you would need to modify and run this function.
 def add_template():
     temp_type = 'single_buyer'
-    temp = "Hereby I $seller authorize the access to $buyer for the following databases:" \
-           " $data from $start_date to $end_date for the following roles $authorized_roles." \
-           " Seller signature $seller_sign, Buyer signature $buyer_sign"
+    temp = "Hereby I $seller authorize the access to $buyer for the following databases: "\
+           "$data from $start_date to $end_date for the following roles $authorized_roles. "\
+           "Seller signature $seller_sign, Buyer signature $buyer_sign"
+
     templates_collection.insert_one({'temp_type': temp_type, 'template': temp})
 
 
