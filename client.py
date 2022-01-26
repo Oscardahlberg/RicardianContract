@@ -55,5 +55,5 @@ def getId(name):
     headers = {'Content-Type': 'application/json'}
     response = requests.get(url, headers = headers)
     data = response.json()["entity"]
-    aid = data[0]["id"]
-    print(aid)
+    nid = data[0]["id"]
+    print(nid)
