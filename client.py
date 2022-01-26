@@ -23,13 +23,16 @@ def get(msg):
     print("Received: ", msg)
     s.close()
 
+    #skapa en session
 def sessions():
     url = "http://localhost:8080/pm/api/sessions"
     headers = {'Content-Type': 'application/json'}
     body = json.dumps({"username" : "super", "password" : "super"})
     response = requests.post(url, headers = headers, data = body)
+    print(response.json()["entity"])
     return response.json()["entity"]
 
+    #byt till din skapade session i url
 def createNode(name, type, desc, prop1, prop2):
     url ="http://localhost:8080/pm/api/nodes?session=E159D282E2014CDBA40F680E659395B9"
     headers = {'Content-Type': 'application/json'}
