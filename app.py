@@ -81,6 +81,8 @@ def create_user():
             email = request.form.get('email')
             password = request.form.get('password')
             save_user(username, email, password, password)
+            #skapar noden för user
+            client.createNode(username,"U",email,"password",password)
         except Exception as e:
             print(e)
             return e
