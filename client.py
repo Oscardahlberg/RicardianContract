@@ -1,10 +1,11 @@
 import socket
 import jpysocket
-import requests
 import json
+import requests
 
 PORT = 49000
-
+#Skapa en session och byt ut till din här!
+session = "E159D282E2014CDBA40F680E659395B9"
 
 def post(msg):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,16 +23,19 @@ def get(msg):
     msg = jpysocket.jpydecode(msg)
     print("Received: ", msg)
     s.close()
-
+    
+#Skapa en session!
 def sessions():
     url = "http://localhost:8080/pm/api/sessions"
     headers = {'Content-Type': 'application/json'}
     body = json.dumps({"username" : "super", "password" : "super"})
     response = requests.post(url, headers = headers, data = body)
+    print(response.json()["entity"])
     return response.json()["entity"]
 
+#Skapa nod!
 def createNode(name, type, desc, prop1, prop2):
-    url ="http://localhost:8080/pm/api/nodes?session=E159D282E2014CDBA40F680E659395B9"
+    url ="http://localhost:8080/pm/api/nodes?session={}".format(session)
     headers = {'Content-Type': 'application/json'}
     body = json.dumps({
   "name": "{}".format(name),
@@ -49,11 +53,12 @@ def createNode(name, type, desc, prop1, prop2):
     response = requests.post(url, headers = headers, data = body)
     print(response.json())
 
-#Hämtar nod id baserat på nodens namn
+#Hämta nodens ID baserat på nodens namn
 def getId(name):
-    url = "http://localhost:8080/pm/api/nodes?session=E159D282E2014CDBA40F680E659395B9&name={}".format(name)
+    url = "http://localhost:8080/pm/api/nodes?session={}&name={}".format(session, name)
     headers = {'Content-Type': 'application/json'}
     response = requests.get(url, headers = headers)
     data = response.json()["entity"]
-    nid = data[0]["id"]
-    print(nid)
+    nId = data[0]["id"]
+    print(nId)
+    return nId
