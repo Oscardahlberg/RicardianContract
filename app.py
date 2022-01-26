@@ -9,7 +9,7 @@ from flask_cors import CORS
 
 import to_list
 from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user, data_collection, \
-    new_dataset, users_collection, negotiations_collection, access_collection, get_template, add_template
+    new_dataset, users_collection, access_collection, get_template, add_template
 import client
 
 app = Flask(__name__)
@@ -19,9 +19,6 @@ app.secret_key = "sfdjkafnk"
 login_manager = LoginManager()
 login_manager.login_view = 'login'
 login_manager.init_app(app)
-
-
-# User login receives form params username and password
 
 
 @app.route('/')
@@ -91,7 +88,6 @@ def create_user():
         # TODO:CALL TO CREATE USER IN GRAPH
 
         return home("User successfully created")
-        # return {'message': "User successfully created"}, 200
 
 
 # User logout
@@ -102,9 +98,6 @@ def logout():
     logout_user()
     return home("You have logged out")
 
-
-# Start negotiation:
-# To be done: Verify validity of inputs, for example, x permision for y database is possible
 
 @app.route("/<user_id>/nego")
 @login_required
@@ -181,7 +174,6 @@ def new_nego_req(data_id):
 @app.route("/negotiate/<req_id>/respond")
 @login_required
 def neg_page(req_id):
-
     try:
         neg_info = to_list.access_perm_to_list(get_neg(req_id))
 
@@ -255,14 +247,8 @@ def accept(req_id):
 @login_required
 def cancel(req_id):
     try:
-        req = get_neg(req_id)
-        if current_user.username == req['provider']:
-            print(req["provider"])
-            change_status(req_id, 'reject', current_user.username)
-            print(req["provider"])
-            return home("The contract has been rejected")
-        else:
-            return home("You are not authorized to perform this task")
+        change_status(req_id, 'reject', current_user.username)
+        return home("The contract has been rejected")
     except Exception as e:
         print(e)
         return e
@@ -274,7 +260,6 @@ def new_data_page():
     return render_template("new_dataset.html")
 
 
-# Only accesible to the owner of such resource, this route cancels the negotiation.
 @app.route("/new_data", methods=['POST'])
 @login_required
 def new_data():
@@ -301,10 +286,13 @@ def new_data():
 @app.route("/search_data")
 def data_page():
     try:
+        username = current_user.username if current_user.is_authenticated else ""
+        title = "Availabe data for contract" if current_user.is_authenticated else "Login to make a contract"
+
         return render_template("datasets.html",
                                data_list=to_list.data_to_list(data_collection.find()),
-                               title="Available data for contract",
-                               username=current_user.username)
+                               title=title,
+                               username=username)
     except Exception as e:
         print(e)
         return e
@@ -323,16 +311,20 @@ def users_data_page(user_id):
         return e
 
 
+def load_template():
+    try:
+        get_template("single_buyer")
+    except TypeError as a:
+        add_template()
+
+
 @login_manager.user_loader
 def load_user(username):
     return get_user(username)
 
 
 if __name__ == '__main__':
-    try:
-        get_template("single_buyer")
-    except TypeError as a:
-        add_template()
+    load_template()
 
     # TODO: CALL TO GET SESSION ID AND THE CREATE PERMANENT CLASSES
 
