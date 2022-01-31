@@ -95,15 +95,15 @@ def get_associations(node_name):
         return "Error getting node_id" + msg
 
     url = "http://localhost:8080/pm/api/associations?" \
-          "targetId={}?session={}".format(node_id, session)
+          "session={}&targetId={}".format(session, node_id)
     headers = {'Content-Type': 'application/json'}
 
     response = requests.get(url, headers=headers)
-    print(response.json()["message"])
-    return response.json()["entity"], response.json()["message"]
+    print(response.json())
+    return response.json(), response.json()["message"]
 
 
 # Kollar om username har en nod som heter username_seller
 def is_seller(username):
-    msg, seller_id = get_id(username + "_seller")
+    seller_id, msg = get_id(username + "_seller")
     return msg
