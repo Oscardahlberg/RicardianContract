@@ -33,8 +33,15 @@ def access_perm_to_list(nego):
              nego["status"]]                         # 9
     return table
 
-def data_groups_to_list(data_groups):
-    return 1
+
+def assigns_or_assocs_to_list(data_list):
+
+    links_name_list = []
+    for link in data_list:
+        if link["parent"]["id"] > 0:
+            links_name_list.append(link["parent"]["name"])
+
+    return links_name_list
 
 
 
