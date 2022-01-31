@@ -28,8 +28,6 @@ def home(*argv):
     name = ""
     user_id = ""
     if current_user.is_authenticated:
-        client.create_node(current_user.username, "U", "")
-
         name = current_user.username
         try:
             user_id = users_collection.find_one({"username": name})["_id"]
@@ -261,23 +259,7 @@ def cancel(req_id):
 @app.route("/new_data")
 @login_required
 def new_data_page():
-    # After this paragraf, a user will have a node attached to them named name_seller
-    msg = client.is_seller(current_user.username)
-    if msg == "no nodes found":
-        msg = client.create_node(current_user.username + "_seller", "UA", "")
-        if msg != "Success":
-            return home("Neo4j error creating node: " + msg)
-        msg = client.make_assignment(current_user.username, current_user.username + "_seller")
-        if msg != "Success":
-            return home("Neo4j error making assignment: " + msg)
-
-    data_groups, msg = client.get_associations(current_user.username + "_seller")
-    if msg != "Success":
-        return home("Could not get user groups with error code: " + msg)
-
-    if len(data_groups) > 0:
-        return render_template("new_dataset.html", data_groups=to_list.data_groups_to_list(data_groups))
-    return render_template("new_dataset_and_group.html", title="Create data and a data group")
+    return render_template("new_dataset_and_group.html")
 
 
 @app.route("/new_data", methods=['POST'])
@@ -294,27 +276,6 @@ def new_data():
         can_delete = True if request.form.get('can_delete') == 'Yes' else False
 
         group_name = request.form.get('group_name')
-
-        group_id, msg = client.get_id(group_name)
-        if msg != "Success":
-            return home("Neo4j error trying to get node id: " + msg)
-
-        msg = client.create_node(name, "O", "")
-        if msg != "Success":
-            return home("Neo4j error creating node: " + msg)
-
-        if group_id == 0:
-            msg = client.create_node(group_name, "OA", "")
-            if msg != "Success":
-                return home("Neo4j error creating node: " + msg)
-
-        msg = client.make_assignment(name, group_name)
-        if msg != "Success":
-            return home("Neo4j error creating assignment: " + msg)
-
-        msg = client.make_association(current_user.username + "_seller", group_name, True, True)
-        if msg != "Success":
-            return home("Neo4j error creating assignment: " + msg)
 
         new_dataset(name, current_user.username, can_read, can_modify, can_delete)
 
