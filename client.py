@@ -68,7 +68,7 @@ def make_assignment(node_name, group_name):
 
     group_id, msg = get_id(group_name)
     if not msg == "Success":
-        return "Error getting node_id" + msg
+        return "Error getting group_id" + msg
 
     url = "http://localhost:8080/pm/api/assignments?session=" + format(session)
     body = json.dumps({
