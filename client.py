@@ -13,6 +13,7 @@ def sessions():
     url = "http://localhost:8080/pm/api/sessions"
     headers = {'Content-Type': 'application/json'}
     body = json.dumps({"username": "super", "password": "super"})
+
     response = requests.post(url, headers=headers, data=body)
     print(response.json()["entity"])
     return response.json()["entity"]
