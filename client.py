@@ -59,7 +59,7 @@ def get_id(name):
         return 0, response.json()["message"]
 
     if len(data) < 1:
-        return 0, "no nodes found"
+        return 0, "Success"
 
     nId = data[0]["id"]
 
@@ -100,10 +100,12 @@ def get_associations(node_name):
 
     response = requests.get(url, headers=headers)
     print(response.json())
-    return response.json(), response.json()["message"]
+    return response.json()["entity"], response.json()["message"]
 
 
 # Kollar om username har en nod som heter username_seller
 def is_seller(username):
     seller_id, msg = get_id(username + "_seller")
+    if seller_id == 0:
+        return "no nodes found"
     return msg
