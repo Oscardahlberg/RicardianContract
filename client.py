@@ -20,13 +20,13 @@ def sessions():
 
 # Skapa nod!
 # Den sista variabeln är frivilig, ex: create_node("namn", "U", "desc...")
-def create_node(name, type, desc, *argv):
+def create_node(node_name, node_type, desc, *argv):
     url = "http://localhost:8080/pm/api/nodes?session={}".format(session)
     headers = {'Content-Type': 'application/json'}
     if argv:
         body = json.dumps({
-            "name": name,
-            "type": type,
+            "name": node_name,
+            "type": node_type,
             "description": desc,
             "properties": [
                 {
@@ -37,8 +37,8 @@ def create_node(name, type, desc, *argv):
         })
     else:
         body = json.dumps({
-            "name": name,
-            "type": type,
+            "name": node_name,
+            "type": node_type,
             "description": desc,
             "properties": []
         })
@@ -86,6 +86,35 @@ def make_assignment(node_name, group_name):
 
     response = requests.post(url, headers=headers, data=body)
     print(response.json()["message"])
+    return response.json()["message"]
+
+
+# Gör en association, ex make_association("osci", "LTU_STUDENT", True, False)
+def make_association(node_name, group_name, r, w):
+    node_id, msg = get_id(node_name)
+    if msg != "Success":
+        return "Error getting node_id" + msg
+
+    group_id, msg = get_id(group_name)
+    if msg != "Success":
+        return "Error getting group_id" + msg
+
+    ops_list = []
+    if r:
+        ops_list.append("read")
+    if w:
+        ops_list.append("write")
+
+    url = "http://localhost:8080/pm/api/associations?session=" + format(session)
+    body = json.dumps({
+        "uaId": node_id,
+        "targetId": group_id,
+        "ops": ops_list
+    })
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.post(url, headers=headers, data=body)
+    print(response.json())
     return response.json()["message"]
 
 
