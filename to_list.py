@@ -33,9 +33,4 @@ def access_perm_to_list(nego):
              nego["status"]]                         # 9
     return table
 
-def data_groups_to_list(data_groups):
-    return 1
-
-
-
 
