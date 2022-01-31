@@ -32,7 +32,7 @@ def access_perm_to_list(nego):
              nego["request_details"]["role"],        # 8
              nego["status"]]                         # 9
     return table
-
+  
 
 def assigns_or_assocs_to_list(data_list):
 
@@ -42,7 +42,3 @@ def assigns_or_assocs_to_list(data_list):
             links_name_list.append(link["parent"]["name"])
 
     return links_name_list
-
-
-
-
