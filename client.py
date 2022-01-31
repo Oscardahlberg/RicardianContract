@@ -78,4 +78,5 @@ def make_assignment(node_name, group_name):
     headers = {'Content-Type': 'application/json'}
 
     response = requests.post(url, headers=headers, data=body)
-    return print(response.json()["message"])
+    print(response.json()["message"])
+    return response.json()["message"]
