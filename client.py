@@ -90,7 +90,7 @@ def make_assignment(node_name, group_name):
 
 
 def get_associations(node_name):
-    msg, node_id = get_id(node_name)
+    node_id, msg = get_id(node_name)
     if msg != "Success":
         return "Error getting node_id" + msg
 
