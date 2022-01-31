@@ -124,12 +124,34 @@ def get_associations(node_name):
         return "Error getting node_id" + msg
 
     url = "http://localhost:8080/pm/api/associations?" \
-          "session={}&targetId={}".format(session, node_id)
+          "session={}&nodeID={}&type=source".format(session, node_id)
+    print(url)
     headers = {'Content-Type': 'application/json'}
 
     response = requests.get(url, headers=headers)
     print(response.json())
     return response.json()["entity"], response.json()["message"]
+
+
+def get_assignment(child_name, parent_name):
+    child_id, msg = get_id(child_name)
+    if msg != "Success":
+        return False, "Error getting node_id" + msg
+
+    parent_id, msg = get_id(parent_name)
+    if msg != "Success":
+        return False, "Error getting group_id" + msg
+
+    url = "http://localhost:8080/pm/api/assignments?" \
+          "session={}&childId={}&parentId={}".format(session, child_id, parent_id)
+    print(url)
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.get(url, headers=headers)
+    print(response.json())
+    if response.json()["entity"]:
+        return True, response.json()["message"]
+    return False, response.json()["message"]
 
 
 # Kollar om username har en nod som heter username_seller
