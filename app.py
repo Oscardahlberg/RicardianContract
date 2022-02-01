@@ -345,4 +345,4 @@ def load_user(username):
 if __name__ == '__main__':
     load_template()
     # client.sessions()
-    app.run(port=8086, debug=True)
+    app.run(host='0.0.0.0', debug=True)
