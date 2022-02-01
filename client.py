@@ -126,7 +126,7 @@ def get_associations(node_name):
         return "Error getting node_id" + msg
 
     url = "http://localhost:8080/pm/api/associations?" \
-          "session={}&nodeID={}".format(session, node_id)
+          "nodeID={}&session={}".format(node_id, session)
     print(url)
     headers = {'Content-Type': 'application/json'}
 
