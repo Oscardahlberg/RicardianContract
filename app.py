@@ -9,7 +9,7 @@ from flask_cors import CORS
 
 import to_list
 from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user, data_collection, \
-    new_dataset, users_collection, access_collection, get_template, add_template
+    new_dataset, users_collection, access_collection, get_template, add_template, negotiations_collection
 import client
 
 app = Flask(__name__)
@@ -83,10 +83,10 @@ def create_user():
             password = request.form.get('password')
             save_user(username, email, password, password)
             # skapar noden för user
+
             msg = client.create_node(username, "U", "")
             if msg != "Success":
                 return home("Error creating user node: " + msg)
-
         except Exception as e:
             print(e)
             return e
@@ -234,12 +234,28 @@ def neg(req_id):
 def accept(req_id):
     try:
         req = get_neg(req_id)
-        if current_user.username in (req['provider'] or req['demander']):
-            change_status(req_id, 'accept', current_user.username)
+        if current_user.username in (req['provider'], req['demander']):
+            change_status(req_id, 'accept', current_user.username) # 3d argument does nothing
             sign_contract(req_id)
-            return home("The negotiation has been accepted.")
+            nego = negotiations_collection.find_one({'req_id': ObjectId('{}'.format(req_id))})
+            req_details = nego['request_details']
+            user_grp = req_details['role']
+            data_grp = req_details['item']
+            # Kollar om gruppen inte finns
+            if not client.get_id(user_grp)[0]:
+                client.create_node(user_grp, 'UA', "")
+                print('created the user group')
 
-            # TODO:CALL TO GRAPH TO LINK CURRENT_USER TO DATASET WITH ID REQ_ID
+            # Kollar om användaren inte är med i gruppen
+            if not client.get_assignment(req['demander'], user_grp)[0]:
+                client.make_assignment(req['demander'], user_grp)
+                print('created assignment to user group')
+
+            client.make_association(user_grp, data_grp, True, True)
+
+            # Skapa gruppen om den inte redan finns
+
+            return home("The negotiation has been accepted.")
 
         else:
             return home("You are not authorized to perform this task")
@@ -427,5 +443,5 @@ def load_user(username):
 
 if __name__ == '__main__':
     load_template()
-
+    # client.sessions()
     app.run(host='0.0.0.0', debug=True)

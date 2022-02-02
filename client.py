@@ -7,7 +7,7 @@ import to_list
 
 PORT = 49000
 # Skapa en session och byt ut till din här!
-session = "6858425E4A3845BE89E74422BA5AA822"
+session = "7D98140F160C4F0AA28CA385AA7B27B4"
 
 
 # Skapa en session!
@@ -18,6 +18,7 @@ def sessions():
 
     response = requests.post(url, headers=headers, data=body)
     print(response.json()["entity"])
+    session = response.json()["entity"]
     return response.json()["entity"]
 
 
@@ -62,7 +63,7 @@ def get_id(name):
         return 0, response.json()["message"]
 
     if len(data) < 1:
-        return 0, "Success"
+        return False, response.json()["message"]
 
     nId = data[0]["id"]
 
@@ -184,11 +185,11 @@ def get_all_associations():
 
 def get_assignment(child_name, parent_name):
     child_id, msg = get_id(child_name)
-    if msg != "Success":
+    if not child_id:
         return False, "Error getting node_id" + msg
 
     parent_id, msg = get_id(parent_name)
-    if msg != "Success":
+    if not parent_id:
         return False, "Error getting group_id" + msg
 
     url = "http://localhost:8080/pm/api/assignments?" \
