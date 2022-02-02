@@ -22,7 +22,26 @@
     <select name="can_delete" id="can_delete" multiple>
         <option value="Yes">Yes</option>
         <option value="No">No</option>
-    </select><br><br>
+    </select><br>
+
+    <h3>Choose data group to add your data to</h3>
+
+    {% if data_groups %}
+        <select name="group_name" id="group_name">
+            <option value="">--Choose an existing group--</option>
+            {% for data_group_name in data_groups %}
+                <option value="{{data_group_name}}">{{ data_group_name }}</option>
+            {% endfor %}
+        </select><br>
+        <h3>Or create a new group to add your data to</h3>
+        <label for="group_name">Name for data group</label><br>
+        <input type="text" id="group_name" name="group_new_name"><br>
+    {% else %}
+        <h3>You have no data groups, choose a name for a new one</h3>
+        <label for="group_name">Name for data group</label><br>
+        <input type="text" id="group_name" name="group_new_name"><br>
+    {% endif %}
+
     <input type="submit" value="Submit">
 </form>
 

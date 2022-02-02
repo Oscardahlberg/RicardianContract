@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    #one_data_div {
+        display: block;
+        border-radius: 1px;
+        background-color: lightgray;
+        padding: 10px;
+    }
+    #name {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+    #owner {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+    #permissions {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+</style>
+
+<h1>{{ title }}</h1>
+
+<body>
+
+{% for data_owner in data_owner_list %}
+    {% for data_group in data_owner[1] %}
+        <div id = "one_data_div">
+
+            <p id="name">Group name: <b>{{ data_group }}</b></p>
+            <p id="owner">Owner: <b>{{ data_owner[0][:-7] }}</b></p>
+
+            <form action="/search_data/{{ data_group }}">
+                <input type="submit" value="View data in group">
+            </form>
+
+            {% if username != data_owner[0][:-7] and username %}
+            <form action="/negotiate/{{ data_group }}/create">
+                <input type="submit" value="Negotiate contract">
+            </form>
+            {% endif %}
+
+        </div>
+    {% endfor %}
+{% endfor %}
+
+</body>
+</html>
