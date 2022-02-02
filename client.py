@@ -3,6 +3,8 @@ import jpysocket
 import json
 import requests
 
+import to_list
+
 PORT = 49000
 # Skapa en session och byt ut till din här!
 session = "7D98140F160C4F0AA28CA385AA7B27B4"
@@ -120,14 +122,60 @@ def make_association(user_group_name, data_group_name, r, w):
     return response.json()["message"]
 
 
-def get_associations(node_name):
+def get_associations_UA_OA(node_name):
+    node_id, msg = get_id(node_name)
+    if msg != "Success":
+        return "Error getting node_id" + msg
+
+    url = "http://localhost:8080/pm/api/associations/" \
+          "subjects/{}?session={}".format(node_id, session)
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.get(url, headers=headers)
+    print(response.json())
+    return to_list.parent_list(response.json()["entity"]), response.json()["message"]
+
+
+def get_associations_OA_UA(node_name):
     node_id, msg = get_id(node_name)
     if msg != "Success":
         return "Error getting node_id" + msg
 
     url = "http://localhost:8080/pm/api/associations?" \
-          "nodeID={}&session={}".format(node_id, session)
-    print(url)
+          "targetId={}&session={}".format(node_id, session)
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.get(url, headers=headers)
+    print(response.json())
+    return to_list.child_list(response.json()["entity"]), response.json()["message"]
+
+
+def get_node_children(node_id):
+    url = "http://localhost:8080/pm/api/nodes/" \
+          "{}/children?&session={}".format(node_id, session)
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.get(url, headers=headers)
+    print(response.json())
+    return to_list.node_list(response.json()["entity"]), response.json()["message"]
+
+
+def get_nodes_with_type(node_type):
+    if node_type not in ("U", "UA", "O", "OA", "S", "PC"):
+        print("Wrong node type, has to be one of U, UA, O, OA, S, PC")
+        return 0, "Wrong node type"
+
+    url = "http://localhost:8080/pm/api/nodes?" \
+          "type={}&session={}".format(node_type, session)
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.get(url, headers=headers)
+    print(response.json())
+    return to_list.node_list(response.json()["entity"]), response.json()["message"]
+
+
+def get_all_associations():
+    url = "http://localhost:8080/pm/api/associations?&session={}".format(session)
     headers = {'Content-Type': 'application/json'}
 
     response = requests.get(url, headers=headers)

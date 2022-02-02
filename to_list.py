@@ -32,9 +32,19 @@ def access_perm_to_list(nego):
              nego["request_details"]["role"],        # 8
              nego["status"]]                         # 9
     return table
-  
 
-def assigns_or_assocs_to_list(data_list):
+
+def node_list(data_list):
+
+    node_name_list = []
+    for node in data_list:
+        if node["id"] > 0:
+            node_name_list.append(node["name"])
+
+    return node_name_list
+
+
+def parent_list(data_list):
 
     links_name_list = []
     for link in data_list:
@@ -42,3 +52,16 @@ def assigns_or_assocs_to_list(data_list):
             links_name_list.append(link["parent"]["name"])
 
     return links_name_list
+
+
+def child_list(data_list):
+
+    links_name_list = []
+    for link in data_list:
+        if link["child"]["id"] > 0:
+            links_name_list.append(link["child"]["name"])
+
+    return links_name_list
+
+
+

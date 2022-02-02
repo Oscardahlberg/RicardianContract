@@ -28,6 +28,7 @@ def home(*argv):
     name = ""
     user_id = ""
     if current_user.is_authenticated:
+
         name = current_user.username
         try:
             user_id = users_collection.find_one({"username": name})["_id"]
@@ -82,7 +83,10 @@ def create_user():
             password = request.form.get('password')
             save_user(username, email, password, password)
             # skapar noden för user
-            client.create_node(username, "U", "")
+
+            msg = client.create_node(username, "U", "")
+            if msg != "Success":
+                return home("Error creating user node: " + msg)
         except Exception as e:
             print(e)
             return e
@@ -148,7 +152,7 @@ def user_completed_negosiations(user_id):
                            user=current_user.username)
 
 
-@app.route("/negotiate/<data_id>/create")
+@app.route("/negotiate/<data_group>/create")
 @login_required
 def new_nego(data_id):
     return render_template("nego.html", data_id=data_id)
@@ -275,7 +279,21 @@ def cancel(req_id):
 @app.route("/new_data")
 @login_required
 def new_data_page():
-    return render_template("new_dataset.html")
+    # After this paragraf, a user will have a node attached to them named name_seller
+    msg = client.is_seller(current_user.username)
+    if msg == "no nodes found":
+        msg = client.create_node(current_user.username + "_seller", "UA", "")
+        if msg != "Success":
+            return home("Neo4j error creating node: " + msg)
+        msg = client.make_assignment(current_user.username, current_user.username + "_seller")
+        if msg != "Success":
+            return home("Neo4j error making assignment: " + msg)
+
+    data_groups, msg = client.get_associations_UA_OA(current_user.username + "_seller")
+    if msg != "Success":
+        return home("Could not get user groups with error code: " + msg)
+
+    return render_template("new_dataset.html", data_groups=data_groups)
 
 
 @app.route("/new_data", methods=['POST'])
@@ -291,7 +309,30 @@ def new_data():
         can_modify = True if request.form.get('can_mod') == 'Yes' else False
         can_delete = True if request.form.get('can_delete') == 'Yes' else False
 
-        group_name = request.form.get('group_name')
+        group_name = request.form.get('group_new_name') if \
+            request.form.get('group_new_name') else request.form.get('group_name')
+
+        group_id, msg = client.get_id(group_name)
+        if msg != "Success":
+            return home("Neo4j error trying to get node id: " + msg)
+        print(msg)
+        if group_id == 0:
+            msg = client.create_node(group_name, "OA", "")
+            if msg != "Success":
+                return home("Neo4j error creating node: " + msg)
+            print(msg)
+            msg = client.make_association(current_user.username + "_seller", group_name, True, True)
+            if msg != "Success":
+                return home("Neo4j error creating assignment: " + msg)
+        print(msg)
+        msg = client.create_node(name, "O", "")
+        if msg != "Success":
+            return home("Neo4j error creating node: " + msg)
+        print(msg)
+        msg = client.make_assignment(name, group_name)
+        if msg != "Success":
+            return home("Neo4j error creating assignment: " + msg)
+        print(msg)
 
         new_dataset(name, current_user.username, can_read, can_modify, can_delete)
 
@@ -303,13 +344,72 @@ def new_data():
 
 
 @app.route("/search_data")
-def data_page():
+def data_group_page(*args):
     try:
+        if not args:
+            all_data_owners, msg = client.get_nodes_with_type("UA")
+            if msg != "Success":
+                return home("Neo4j error: " + msg)
+        else:
+            all_data_owners = args[0]
+
+        print(all_data_owners)
+        for data_owner in all_data_owners:
+            data_group_names, msg = client.get_associations_UA_OA(data_owner)
+            if msg != "Success":
+                return home("Neo4j error: " + msg)
+            all_data_index = all_data_owners.index(data_owner)
+            all_data_owners[all_data_owners.index(data_owner)] = [data_owner, []]
+            for data_group_name in data_group_names:
+                all_data_owners[all_data_index][1].append(data_group_name)
+        print(all_data_owners)
+
         username = current_user.username if current_user.is_authenticated else ""
-        title = "Availabe data for contract" if current_user.is_authenticated else "Login to make a contract"
+        if not args:
+            title = "Availabe data groups for contract" if current_user.is_authenticated else "Login to make a contract"
+        else:
+            title = args[1]
+
+        return render_template("data_groups_to_buy.html",
+                               data_owner_list=all_data_owners,
+                               title=title,
+                               username=username)
+    except Exception as e:
+        print(e)
+        return e
+
+
+@app.route("/search_data/<data_group>")
+def data_page(data_group):
+    try:
+        data_group_id, msg = client.get_id(data_group)
+        if msg != "Success":
+            return home("Neo4j error with msg: " + msg)
+        if data_group_id == 0:
+            return home("Data group does not exist")
+
+        data_names, msg = client.get_node_children(data_group_id)
+        if msg != "Success":
+            return home("Neo4j error with msg: " + msg)
+
+        data_list = []
+        for data_name in data_names:
+            data_list.append(data_collection.find_one({"name": data_name}))
+
+        username = current_user.username if current_user.is_authenticated else ""
+
+        if current_user.is_authenticated:
+            title = "Availabe data for contract"
+            data_owner, msg = client.get_associations_OA_UA(data_group)
+            if msg != "Success":
+                return home("Neo4j error with msg: " + msg)
+            if data_owner[0][:-7] == username:
+                title = "Data owned by: " + username
+        else:
+            title = "Login to make a contract"
 
         return render_template("datasets.html",
-                               data_list=to_list.data_to_list(data_collection.find()),
+                               data_list=to_list.data_to_list(data_list),
                                title=title,
                                username=username)
     except Exception as e:
@@ -320,11 +420,10 @@ def data_page():
 @app.route("/<user_id>/data")
 def users_data_page(user_id):
     try:
-        user_data = data_collection.find({"owner": users_collection.find_one({"_id": ObjectId(user_id)})["username"]})
-        return render_template("datasets.html",
-                               data_list=to_list.data_to_list(user_data),
-                               title="Data owned by: " + current_user.username,
-                               username=current_user.username)
+        user_data = users_collection.find_one({"_id": ObjectId(user_id)})
+
+        return data_group_page([user_data["username"] + "_seller"],
+                               "Data groups owned by by: " + user_data["username"])
     except Exception as e:
         print(e)
         return e
