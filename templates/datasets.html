@@ -29,19 +29,15 @@
 {% for data_index in data_list %}
     <div id = "one_data_div">
 
-        <p id="name">Name: <b>{{ data_index[1] }}</b></p>
-        <p id="owner">Owner: <b>{{ data_index[2] }}</b></p>
+        <p id="name">Name: <b>{{ data_index }}</b></p>
+        <!-- <p id="owner">Owner: <b>{{ data_index[2] }}</b></p> -->
         <!-- IGNORE ERRORS :) -->
-        <p id="permissions">Readable?: <b>{{ data_index[3] }}</b></p>
-        <p id="permissions">Modifiable?: <b>{{ data_index[4] }}</b></p>
-        <p id="permissions">Deletable?: <b>{{ data_index[5] }}</b></p>
-
     </div>
 {% endfor %}
 
-{% if username != data_list[0][2] and username %}
+{% if True == False %}
     <!-- NÅN ANNAN FÅR FIXA :) -->
-    <form action="/negotiate/{{ data_list[0][2] }}/create">
+    <form action="/negotiate/{{ data_list }}/create">
         <input type="submit" value="Negotiate contract">
     </form>
 {% endif %}

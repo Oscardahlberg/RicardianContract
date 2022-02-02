@@ -7,7 +7,7 @@ import to_list
 
 PORT = 49000
 # Skapa en session och byt ut till din här!
-session = "7D98140F160C4F0AA28CA385AA7B27B4"
+session = "74E652E8727D4A1AACC2ED16DF4B7B9C"
 
 
 # Skapa en session!
@@ -63,7 +63,7 @@ def get_id(name):
         return 0, response.json()["message"]
 
     if len(data) < 1:
-        return False, response.json()["message"]
+        return 0, response.json()["message"]
 
     nId = data[0]["id"]
 
