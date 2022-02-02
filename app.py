@@ -154,22 +154,21 @@ def user_completed_negosiations(user_id):
 
 @app.route("/negotiate/<data_group>/create")
 @login_required
-def new_nego(data_id):
-    return render_template("nego.html", data_id=data_id)
+def new_nego(data_group):
+    return render_template("nego.html", data_id=data_group)
 
 
-@app.route("/negotiate/<data_id>/submit", methods=['POST'])
+@app.route("/negotiate/<data_group>/submit", methods=['POST'])
 @login_required
-def new_nego_req(data_id):
+def new_nego_req(data_group):
     try:
-        data_name = data_collection.find_one({"_id": ObjectId(data_id)})["name"]
         st_date = request.form.get('st_date')
         end_date = request.form.get('end_date')
         role = request.form.get('role')
         offering = request.form.get('offering')
         # The following function may be changed to iterate if multiple roles are requested
 
-        new_permi(current_user.username, data_name, st_date, end_date, role, offering)
+        new_permi(current_user.username, data_group, st_date, end_date, role, offering)
 
         return home("A negotation has been created")
         # return {"message": "The negotiation with id {} has been created".format(str(neg_id))}, 200
@@ -235,7 +234,7 @@ def accept(req_id):
     try:
         req = get_neg(req_id)
         if current_user.username in (req['provider'], req['demander']):
-            change_status(req_id, 'accept', current_user.username) # 3d argument does nothing
+            change_status(req_id, 'accept', current_user.username)  # 3d argument does nothing
             sign_contract(req_id)
             nego = negotiations_collection.find_one({'req_id': ObjectId('{}'.format(req_id))})
             req_details = nego['request_details']
@@ -302,15 +301,13 @@ def new_data():
     try:
         name = request.form.get('data_name')
 
-        if data_collection.find_one({"name": name}):
+        if client.get_id(name)[0]:
             return home("Data with that name already exists")
 
-        can_read = True if request.form.get('can_read') == 'Yes' else False
-        can_modify = True if request.form.get('can_mod') == 'Yes' else False
-        can_delete = True if request.form.get('can_delete') == 'Yes' else False
-
-        group_name = request.form.get('group_new_name') if \
-            request.form.get('group_new_name') else request.form.get('group_name')
+        if request.form.get('group_new_name'):
+            group_name = request.form.get('group_new_name')
+        else:
+            group_name = request.form.get('group_name')
 
         group_id, msg = client.get_id(group_name)
         if msg != "Success":
@@ -324,6 +321,12 @@ def new_data():
             msg = client.make_association(current_user.username + "_seller", group_name, True, True)
             if msg != "Success":
                 return home("Neo4j error creating assignment: " + msg)
+            can_read = True if request.form.get('can_read') == 'Yes' else False
+            can_modify = True if request.form.get('can_mod') == 'Yes' else False
+            can_delete = True if request.form.get('can_delete') == 'Yes' else False
+            # Lägg till data group i mongo
+            new_dataset(group_name, current_user.username, can_read, can_modify, can_delete)
+
         print(msg)
         msg = client.create_node(name, "O", "")
         if msg != "Success":
@@ -333,8 +336,6 @@ def new_data():
         if msg != "Success":
             return home("Neo4j error creating assignment: " + msg)
         print(msg)
-
-        new_dataset(name, current_user.username, can_read, can_modify, can_delete)
 
         return home("New dataset has been created")
 
@@ -348,6 +349,9 @@ def data_group_page(*args):
     try:
         if not args:
             all_data_owners, msg = client.get_nodes_with_type("UA")
+            for owner in all_data_owners:
+                if owner[-7:] != "_seller":
+                    all_data_owners.remove(owner)
             if msg != "Success":
                 return home("Neo4j error: " + msg)
         else:
@@ -392,9 +396,10 @@ def data_page(data_group):
         if msg != "Success":
             return home("Neo4j error with msg: " + msg)
 
-        data_list = []
-        for data_name in data_names:
-            data_list.append(data_collection.find_one({"name": data_name}))
+        # data_list = []
+        # for data_name in data_names:
+
+        # data_list.append(data_collection.find_one({"name": data_name}))
 
         username = current_user.username if current_user.is_authenticated else ""
 
@@ -409,7 +414,7 @@ def data_page(data_group):
             title = "Login to make a contract"
 
         return render_template("datasets.html",
-                               data_list=to_list.data_to_list(data_list),
+                               data_list=data_names,
                                title=title,
                                username=username)
     except Exception as e:
@@ -444,4 +449,4 @@ def load_user(username):
 if __name__ == '__main__':
     load_template()
     # client.sessions()
-    app.run(host='0.0.0.0', debug=True)
+    app.run(port=8086, debug=True)
