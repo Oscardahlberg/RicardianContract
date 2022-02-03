@@ -12,6 +12,13 @@ def data_to_list(all_data):
     return full_table
 
 
+def data_dict_to_name_list(all_data):
+    full_table = []
+    for data in all_data:
+        full_table.append(data["name"])
+    return full_table
+
+
 def access_perms_to_list(all_nego, status):
     full_table = []
     for nego in all_nego:
