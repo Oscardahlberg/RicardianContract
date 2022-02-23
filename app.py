@@ -46,6 +46,9 @@ def home(*argv):
 def login_page():
     return render_template("login.html")
 
+@app.route('/navbar')
+def navbar():
+    return render_template("navbar.html")
 
 @app.route('/login', methods=['POST'])
 def login():
