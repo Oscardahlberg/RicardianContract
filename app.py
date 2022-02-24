@@ -11,8 +11,10 @@ import to_list
 from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user, data_collection, \
     new_dataset, users_collection, access_collection, get_template, add_template, negotiations_collection
 import client
+from flask_navigation import Navigation
 
 app = Flask(__name__)
+nav = Navigation(app)
 
 cors = CORS(app)
 app.secret_key = "sfdjkafnk"
@@ -43,8 +45,8 @@ def home(*argv):
 
 
 @app.route('/login')
-def login_page():
-    return render_template("login.html")
+def login_page(*argv):
+    return render_template("login.html", msg=argv[0]) if argv else render_template("login.html", msg="")
 
 
 @app.route('/login', methods=['POST'])
@@ -63,15 +65,15 @@ def login():
             return home("User {} has been authenticated".format(str(current_user.username)))
 
         else:
-            message = 'Failed to login!'
+            return login_page("Username or password incorrect")
     return home(message)
 
 
 # Create a new user
 
 @app.route('/create')
-def create_page():
-    return render_template("createAcc.html")
+def create_page(*argv):
+    return render_template("signup.html", msg=argv[0]) if argv else render_template("signup.html", msg="")
 
 
 @app.route('/create', methods=['POST'])
@@ -80,12 +82,11 @@ def create_user():
         username = request.form.get('username')
         try:
             if users_collection.find_one({"username": username}):
-                return home("User with that name already exists")
+                return create_page("User with that name already exists")
 
             email = request.form.get('email')
             password = request.form.get('password')
             save_user(username, email, password, password)
-            # skapar noden för user
 
             msg = client.create_node(username, "U", "")
             if msg != "Success":
@@ -93,8 +94,6 @@ def create_user():
         except Exception as e:
             print(e)
             return e
-
-        # TODO:CALL TO CREATE USER IN GRAPH
 
         return home("User successfully created")
 
@@ -335,18 +334,15 @@ def data_group_page(*args):
 
         if not args:
             data_groups = to_list.data_to_list(data_collection.find())
-            title = "Availabe data groups for contract" if current_user.is_authenticated else "Login to make a contract"
+            user_data_page = False
         else:
-            title = args[1]
             data_groups = args[0]
+            user_data_page = args[1]
 
-        if len(data_groups) == 0:
-            return home("There is no data")
-
-        return render_template("data_groups_to_buy.html",
+        return render_template("data_goups_to_buy.html",
                                data_groups=data_groups,
-                               title=title,
-                               username=username)
+                               username=username,
+                               user_data_page=user_data_page)
     except Exception as e:
         print(e)
         return e
@@ -354,6 +350,7 @@ def data_group_page(*args):
 
 @app.route("/search_data/<data_group>")
 def data_page(data_group):
+    print(data_group)
     try:
         data_group_id, msg = client.get_id(data_group)
         if msg != "Success":
@@ -367,17 +364,15 @@ def data_page(data_group):
 
         username = current_user.username if current_user.is_authenticated else ""
         if current_user.is_authenticated:
-            title = "Availabe data for contract"
             data_owner, msg = client.get_associations_OA_UA(data_group)
             if msg != "Success":
                 return home("Neo4j error with msg: " + msg)
-            if data_owner == username:
-                title = "Data owned by: " + username
-        else:
-            title = "Login to make a contract"
+
+        data_group_info = to_list.data_to_list([data_collection.find_one({"name": data_group})])
+
         return render_template("datasets.html",
                                data_list=data_names,
-                               title=title,
+                               data_group_info=data_group_info,
                                username=username)
     except Exception as e:
         print(e)
@@ -388,8 +383,7 @@ def data_page(data_group):
 def users_data_page(user_id):
     try:
         user_name = users_collection.find_one({"_id": ObjectId(user_id)})["username"]
-        return data_group_page(to_list.data_to_list(data_collection.find({"owner": user_name})),
-                               "Data groups owned by by: " + user_name)
+        return data_group_page(to_list.data_to_list(data_collection.find({"owner": user_name})), True)
     except Exception as e:
         print(e)
         return e
@@ -398,7 +392,7 @@ def users_data_page(user_id):
 def load_template():
     try:
         get_template("single_buyer")
-    except TypeError as a:
+    except TypeError:
         add_template()
 
 
