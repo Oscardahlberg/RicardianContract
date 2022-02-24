@@ -25,23 +25,7 @@ login_manager.init_app(app)
 
 @app.route('/')
 def home(*argv):
-    msg = argv[0] if argv else ""
-
-    name = ""
-    user_id = ""
-    if current_user.is_authenticated:
-        _id, message = client.get_id(current_user.username)
-        if message != "Success":
-            print("Not success: " + message)
-
-        name = current_user.username
-        try:
-            user_id = users_collection.find_one({"username": name})["_id"]
-        except Exception as e:
-            print(e)
-            return e
-
-    return render_template("index.html", user=name, user_id=user_id, msg=msg)
+    return data_group_page()
 
 
 @app.route('/login')
@@ -104,13 +88,19 @@ def create_user():
 @login_required
 def logout():
     logout_user()
-    return home("You have logged out")
+    return login_page("You have been logged out")
 
 
 @app.route("/<user_id>/nego")
 @login_required
 def user_negotiations(user_id):
     try:
+        if not current_user.is_authenticated:
+            return login_page("You need to login to use this function")
+
+        username = current_user.username
+        user_id = users_collection.find_one({"username": username})["_id"]
+
         nego_as_demander = access_collection.find(
             {"demander": users_collection.find_one({"_id": ObjectId(user_id)})["username"]})
         demander_list = to_list.access_perms_to_list(nego_as_demander, ("submitted", "counter_offer", "new_offer"))
@@ -125,16 +115,22 @@ def user_negotiations(user_id):
 
     combined_list = demander_list + provider_list
     if not len(combined_list):
-        return render_template("user_nego.html", title="No negotiations")
+        return render_template("user_nego.html", title="No negotiations", user_id=user_id)
 
     return render_template("user_nego.html", nego_list=combined_list,
-                           title="Pending negotations", user=current_user.username)
+                           title="Pending negotations", user=current_user.username, user_id=user_id)
 
 
 @app.route("/<user_id>/completed")
 @login_required
 def user_completed_negosiations(user_id):
     try:
+        if not current_user.is_authenticated:
+            return login_page("You need to login to use this function")
+
+        username = current_user.username
+        user_id = users_collection.find_one({"username": username})["_id"]
+
         nego_as_demander = access_collection.find(
             {"demander": users_collection.find_one({"_id": ObjectId(user_id)})["username"]})
         demander_list = to_list.access_perms_to_list(nego_as_demander, ("accepted", "rejected"))
@@ -150,8 +146,11 @@ def user_completed_negosiations(user_id):
     if not len(combined_list):
         return render_template("user_nego.html", title="No completed negotiations")
 
-    return render_template("user_nego.html", nego_list=combined_list, title="Completed negotiations",
-                           user=current_user.username)
+    return render_template("user_nego.html",
+                           nego_list=combined_list,
+                           title="Completed negotiations",
+                           user=username,
+                           user_id=user_id)
 
 
 @app.route("/negotiate/<data_group>/create")
@@ -330,7 +329,11 @@ def new_data():
 @app.route("/search_data")
 def data_group_page(*args):
     try:
-        username = current_user.username if current_user.is_authenticated else ""
+        if not current_user.is_authenticated:
+            return login_page()
+
+        username = current_user.username
+        user_id = users_collection.find_one({"username": username})["_id"]
 
         if not args:
             data_groups = to_list.data_to_list(data_collection.find())
@@ -339,9 +342,10 @@ def data_group_page(*args):
             data_groups = args[0]
             user_data_page = args[1]
 
-        return render_template("data_goups_to_buy.html",
+        return render_template("data_groups_to_buy.html",
                                data_groups=data_groups,
                                username=username,
+                               user_id=user_id,
                                user_data_page=user_data_page)
     except Exception as e:
         print(e)
