@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% include 'navbar.html' %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+          rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+          crossorigin="anonymous">
+</head>
+<body style="background-color: #343A40">
+
+<table class="table table-dark table-striped">
+    <thead>
+    <tr>
+        <th scope="col">Demander</th>
+        <th scope="col">Provider</th>
+        <th scope="col">Creation date</th>
+        <th scope="col">Offer</th>
+        <th scope="col">Data group name</th>
+        <th scope="col">Start date</th>
+        <th scope="col">End date</th>
+        <th scope="col">Role</th>
+        <th scope="col">Status</th>
+        {% if not msg=="Completed negotiations" %}
+        <th scope="col"></th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+        {% endif %}
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for nego_index in nego_list %}
+    <tr>
+        <td>{{ nego_index[1] }}</td>
+        <td>{{ nego_index[2] }}</td>
+        <td>{{ nego_index[3] }}</td>
+        <td>{{ nego_index[4] }}</td>
+        <td>{{ nego_index[5] }}</td>
+        <td>{{ nego_index[6] }}</td>
+        <td>{{ nego_index[7] }}</td>
+        <td>{{ nego_index[8] }}</td>
+        <td>{{ nego_index[9] }}</td>
+        {% if (nego_index[9] == "new_offer" or nego_index[9] == "submitted") and nego_index[2] == user %}
+        <td>
+            <form action="/negotiate/{{ nego_index[0] }}/respond">
+                <input type="submit" value="Respond">
+            </form>
+        </td>
+        <td>
+            <form action="/negotiate/{{ nego_index[0] }}/accept" method="GET">
+                <input type="submit" value="Accept">
+            </form>
+        </td>
+        <td>
+            <form action="/negotiate/{{ nego_index[0] }}/cancel" method="GET">
+                <input type="submit" value="Decline">
+            </form>
+        </td>
+        {% elif nego_index[9] == "counter_offer" and nego_index[1] == user %}
+        <td>
+            <form action="/negotiate/{{ nego_index[0] }}/respond">
+                <input type="submit" value="Respond">
+            </form>
+        </td>
+        <td>
+            <form action="/negotiate/{{ nego_index[0] }}/accept" method="GET">
+                <input type="submit" value="Accept">
+            </form>
+        </td>
+        <td>
+            <form action="/negotiate/{{ nego_index[0] }}/cancel" method="GET">
+                <input type="submit" value="Decline">
+            </form>
+        </td>
+        {% else %}
+        <td></td>
+        <td></td>
+        <td></td>
+        {% endif %}
+
+    </tr>
+    {% endfor %}
+
+    </tbody>
+</table>
+
+</body>

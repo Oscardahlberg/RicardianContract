@@ -1,0 +1,94 @@
+body{
+    padding-top:4.2rem;
+    padding-bottom:4.2rem;
+    background-color: #343A40;
+}
+
+a{
+    text-decoration:none !important;
+}
+
+h1,h2,h3{
+    font-family: 'Arial', sans-serif;
+}
+
+#error_msg {
+    color: #ff054e;
+}
+
+.myform{
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    padding: 1rem;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    width: 100%;
+    pointer-events: auto;
+    background-color: #212529;
+    background-clip: padding-box;
+    border: 1px solid rgba(0,0,0,.2);
+    border-radius: 1.1rem;
+    outline: 0;
+    max-width: 500px;
+    color: #fff;
+}
+
+.tx-tfm{
+    text-transform:uppercase;
+}
+
+.mybtn{
+    border-radius:50px;
+}
+
+.login-or {
+    position: relative;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.span-or {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: -2px;
+    margin-left: -25px;
+    width: 50px;
+    text-align: center;
+    background-color: #283034;
+}
+
+.hr-or {
+    height: 1px;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+form .error {
+    color: #ff0000;
+}
+
+.same-line-buttons {
+    white-space: nowrap; !important;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.button0 {
+    float: left !important;
+    display: inline-block !important;
+}
+
+.button1 {
+    margin-left: 8%;
+    float: none !important;
+    display: inline-block !important;
+}
+
+.button2 {
+    float: right !important;
+    display: inline-block !important;
+}

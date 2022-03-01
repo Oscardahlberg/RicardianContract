@@ -2,12 +2,12 @@
 def data_to_list(all_data):
     full_table = []
     for data in all_data:
-        table = [data["_id"],
-                 data["name"],
-                 data["owner"],
-                 data["permissions"]["read"],
-                 data["permissions"]["modify"],
-                 data["permissions"]["delete"]]
+        table = [data["_id"],                       # 0
+                 data["name"],                      # 1
+                 data["owner"],                     # 2
+                 data["permissions"]["read"],       # 3
+                 data["permissions"]["modify"],     # 4
+                 data["permissions"]["delete"]]     # 5
         full_table.append(table)
     return full_table
 
