@@ -1,11 +1,16 @@
-from datetime import datetime
+from datetime import datetime, date
 from re import S
 
 from bson.json_util import dumps
 from bson.objectid import ObjectId
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_cors import CORS
+
+from flask_wtf import FlaskForm
+from wtforms import SubmitField, DateField, StringField
+from flask_bootstrap import Bootstrap
+from flask_datepicker import datepicker
 
 import to_list
 from db import get_user, get_neg, new_permi, offer, change_status, sign_contract, update, save_user, data_collection, \
@@ -15,6 +20,9 @@ from flask_navigation import Navigation
 
 app = Flask(__name__)
 nav = Navigation(app)
+dp = datepicker(app)
+Bootstrap(app)
+
 
 cors = CORS(app)
 app.secret_key = "sfdjkafnk"
@@ -25,12 +33,12 @@ login_manager.init_app(app)
 
 @app.route('/')
 def home(*argv):
-    return data_group_page()
+    return data_group_page(False, False, argv[0]) if argv else data_group_page()
 
 
 @app.route('/login')
 def login_page(*argv):
-    return render_template("login.html", msg=argv[0]) if argv else render_template("login.html", msg="")
+    return render_template("login/login.html", msg=argv[0]) if argv else render_template("login/login.html", msg="")
 
 
 @app.route('/login', methods=['POST'])
@@ -57,7 +65,7 @@ def login():
 
 @app.route('/create')
 def create_page(*argv):
-    return render_template("signup.html", msg=argv[0]) if argv else render_template("signup.html", msg="")
+    return render_template("login/signup.html", msg=argv[0]) if argv else render_template("login/signup.html", msg="")
 
 
 @app.route('/create', methods=['POST'])
@@ -98,9 +106,6 @@ def user_negotiations(user_id):
         if not current_user.is_authenticated:
             return login_page("You need to login to use this function")
 
-        username = current_user.username
-        user_id = users_collection.find_one({"username": username})["_id"]
-
         nego_as_demander = access_collection.find(
             {"demander": users_collection.find_one({"_id": ObjectId(user_id)})["username"]})
         demander_list = to_list.access_perms_to_list(nego_as_demander, ("submitted", "counter_offer", "new_offer"))
@@ -115,10 +120,10 @@ def user_negotiations(user_id):
 
     combined_list = demander_list + provider_list
     if not len(combined_list):
-        return render_template("user_nego.html", title="No negotiations", user_id=user_id)
+        return render_template("contract/user_nego.html", msg="No negotiations", user_id=user_id)
 
-    return render_template("user_nego.html", nego_list=combined_list,
-                           title="Pending negotations", user=current_user.username, user_id=user_id)
+    return render_template("contract/user_nego.html", nego_list=combined_list,
+                           msg="Pending negotations", user=current_user.username, user_id=user_id)
 
 
 @app.route("/<user_id>/completed")
@@ -127,9 +132,6 @@ def user_completed_negosiations(user_id):
     try:
         if not current_user.is_authenticated:
             return login_page("You need to login to use this function")
-
-        username = current_user.username
-        user_id = users_collection.find_one({"username": username})["_id"]
 
         nego_as_demander = access_collection.find(
             {"demander": users_collection.find_one({"_id": ObjectId(user_id)})["username"]})
@@ -144,35 +146,48 @@ def user_completed_negosiations(user_id):
 
     combined_list = demander_list + provider_list
     if not len(combined_list):
-        return render_template("user_nego.html", title="No completed negotiations")
+        return render_template("contract/user_nego.html", msg="No completed negotiations", user_id=user_id)
 
-    return render_template("user_nego.html",
+    return render_template("contract/user_nego.html",
                            nego_list=combined_list,
-                           title="Completed negotiations",
-                           user=username,
+                           msg="Completed negotiations",
+                           user=current_user.username,
                            user_id=user_id)
+
+
+class InfoForm(FlaskForm):
+    startdate = DateField('Start Date', format='%Y-%m-%d')
+    enddate = DateField('End Date', format='%Y-%m-%d')
+    role = StringField('Role')
+    offer = StringField('Offer')
+    submit = SubmitField('Submit')
+    todayDate = "2022-02-25"
 
 
 @app.route("/negotiate/<data_group>/create")
 @login_required
 def new_nego(data_group):
-    return render_template("nego.html", data_id=data_group)
+    form = InfoForm()
+    return render_template("contract/nego.html",
+                           user_id=users_collection.find_one({"username": current_user.username})["_id"],
+                           data_id=data_group, form=form, msg="", fixed=True)
 
 
 @app.route("/negotiate/<data_group>/submit", methods=['POST'])
 @login_required
 def new_nego_req(data_group):
     try:
-        st_date = request.form.get('st_date')
-        end_date = request.form.get('end_date')
+        st_date = request.form.get('startdate')
+        end_date = request.form.get('enddate')
+
         role = request.form.get('role')
-        offering = request.form.get('offering')
+        offer = request.form.get('offer')
+
         # The following function may be changed to iterate if multiple roles are requested
 
-        new_permi(current_user.username, data_group, st_date, end_date, role, offering)
+        new_permi(current_user.username, data_group, st_date, end_date, role, offer)
 
         return home("A negotation has been created")
-        # return {"message": "The negotiation with id {} has been created".format(str(neg_id))}, 200
     except Exception as e:
         print(e)
 
@@ -183,7 +198,10 @@ def neg_page(req_id):
     try:
         neg_info = to_list.access_perm_to_list(get_neg(req_id))
 
-        return render_template("counter_nego.html",
+        username = current_user.username
+        user_id = users_collection.find_one({"username": username})["_id"]
+
+        return render_template("contract/counter_nego.html",
                                req_id=neg_info[0],
                                demander=neg_info[1],
                                date=neg_info[3],
@@ -191,7 +209,9 @@ def neg_page(req_id):
                                item=neg_info[5],
                                start_date=neg_info[6],
                                end_date=neg_info[7],
-                               role=neg_info[8])
+                               role=neg_info[8],
+                               fixed=True,
+                               user_id=user_id)
     except Exception as e:
         print(e)
         return e
@@ -244,12 +264,10 @@ def accept(req_id):
             # Kollar om gruppen inte finns
             if not client.get_id(user_grp)[0]:
                 client.create_node(user_grp, 'UA', "")
-                print('created the user group')
 
             # Kollar om användaren inte är med i gruppen
             if not client.get_assignment(req['demander'], user_grp)[0]:
                 client.make_assignment(req['demander'], user_grp)
-                print('created assignment to user group')
 
             client.make_association(user_grp, data_grp, True, True)
 
@@ -281,7 +299,10 @@ def cancel(req_id):
 def new_data_page():
     data_groups = to_list.data_dict_to_name_list(data_collection.find({"owner": current_user.username}))
 
-    return render_template("new_dataset.html", data_groups=data_groups)
+    username = current_user.username
+    user_id = users_collection.find_one({"username": username})["_id"]
+
+    return render_template("data/new_dataset.html", data_groups=data_groups, user_id=user_id, fixed=True)
 
 
 @app.route("/new_data", methods=['POST'])
@@ -327,7 +348,7 @@ def new_data():
 
 
 @app.route("/search_data")
-def data_group_page(*args):
+def data_group_page(*argv):
     try:
         if not current_user.is_authenticated:
             return login_page()
@@ -335,18 +356,25 @@ def data_group_page(*args):
         username = current_user.username
         user_id = users_collection.find_one({"username": username})["_id"]
 
-        if not args:
+        if argv:
+            if argv[0] and argv[1]:
+                data_groups = argv[0]
+                user_data_page = argv[1]
+            else:
+                data_groups = to_list.data_to_list(data_collection.find())
+                user_data_page = False
+        else:
             data_groups = to_list.data_to_list(data_collection.find())
             user_data_page = False
-        else:
-            data_groups = args[0]
-            user_data_page = args[1]
 
-        return render_template("data_groups_to_buy.html",
+        msg = argv[2] if argv else ""
+
+        return render_template("data/data_groups_to_buy.html",
                                data_groups=data_groups,
                                username=username,
                                user_id=user_id,
-                               user_data_page=user_data_page)
+                               user_data_page=user_data_page,
+                               msg=msg)
     except Exception as e:
         print(e)
         return e
@@ -354,7 +382,6 @@ def data_group_page(*args):
 
 @app.route("/search_data/<data_group>")
 def data_page(data_group):
-    print(data_group)
     try:
         data_group_id, msg = client.get_id(data_group)
         if msg != "Success":
@@ -374,7 +401,7 @@ def data_page(data_group):
 
         data_group_info = to_list.data_to_list([data_collection.find_one({"name": data_group})])
 
-        return render_template("datasets.html",
+        return render_template("data/datasets.html",
                                data_list=data_names,
                                data_group_info=data_group_info,
                                username=username)
@@ -387,7 +414,7 @@ def data_page(data_group):
 def users_data_page(user_id):
     try:
         user_name = users_collection.find_one({"_id": ObjectId(user_id)})["username"]
-        return data_group_page(to_list.data_to_list(data_collection.find({"owner": user_name})), True)
+        return data_group_page(to_list.data_to_list(data_collection.find({"owner": user_name})), True, False)
     except Exception as e:
         print(e)
         return e

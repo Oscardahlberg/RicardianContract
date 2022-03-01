@@ -3,9 +3,11 @@ body{
     padding-bottom:4.2rem;
     background-color: #343A40;
 }
+
 a{
     text-decoration:none !important;
 }
+
 h1,h2,h3{
     font-family: 'Arial', sans-serif;
 }
@@ -23,7 +25,7 @@ h1,h2,h3{
     flex-direction: column;
     width: 100%;
     pointer-events: auto;
-    background-color: #283034;
+    background-color: #212529;
     background-clip: padding-box;
     border: 1px solid rgba(0,0,0,.2);
     border-radius: 1.1rem;
@@ -31,9 +33,11 @@ h1,h2,h3{
     max-width: 500px;
     color: #fff;
 }
+
 .tx-tfm{
     text-transform:uppercase;
 }
+
 .mybtn{
     border-radius:50px;
 }
@@ -45,6 +49,7 @@ h1,h2,h3{
     padding-top: 10px;
     padding-bottom: 10px;
 }
+
 .span-or {
     display: block;
     position: absolute;
@@ -55,11 +60,35 @@ h1,h2,h3{
     text-align: center;
     background-color: #283034;
 }
+
 .hr-or {
     height: 1px;
-    margin-top: 0px !important;
-    margin-bottom: 0px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
+
 form .error {
     color: #ff0000;
+}
+
+.same-line-buttons {
+    white-space: nowrap; !important;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.button0 {
+    float: left !important;
+    display: inline-block !important;
+}
+
+.button1 {
+    margin-left: 8%;
+    float: none !important;
+    display: inline-block !important;
+}
+
+.button2 {
+    float: right !important;
+    display: inline-block !important;
 }
