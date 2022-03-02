@@ -53,7 +53,7 @@ def create_node(node_name, node_type, desc, *argv):
 
 
 # Hämta nodens ID baserat på nodens namn
-def get_id(name):
+def get_id(name, *args):
     url = "http://localhost:8080/pm/api/nodes?session={}&name={}".format(session, name)
     headers = {'Content-Type': 'application/json'}
     response = requests.get(url, headers=headers)
@@ -67,6 +67,10 @@ def get_id(name):
 
     nId = data[0]["id"]
 
+    if args:
+        if args[0] == "full":
+            print(response.json()["message"])
+            return data, response.json()["message"]
     print(response.json()["message"])
     return nId, response.json()["message"]
 

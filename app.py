@@ -356,16 +356,17 @@ def data_group_page(*argv):
         username = current_user.username
         user_id = users_collection.find_one({"username": username})["_id"]
 
+        user_data_page = False
         if argv:
             if argv[0] and argv[1]:
                 data_groups = argv[0]
                 user_data_page = argv[1]
+            elif argv[0]:
+                data_groups = argv[0]
             else:
                 data_groups = to_list.data_to_list(data_collection.find())
-                user_data_page = False
         else:
             data_groups = to_list.data_to_list(data_collection.find())
-            user_data_page = False
 
         msg = argv[2] if argv else ""
 
@@ -405,6 +406,31 @@ def data_page(data_group):
                                data_list=data_names,
                                data_group_info=data_group_info,
                                username=username)
+    except Exception as e:
+        print(e)
+        return e
+
+
+@app.route("/search_data/search", methods=["POST"])
+def data_search_page():
+    try:
+        search_word = "" + request.form.get("search")
+        full_node, msg = client.get_id(search_word, "full")
+        if msg != "Success":
+            return home("Something wrong with node server: " + msg)
+
+        if not full_node:
+            return home("No data found")
+        if full_node[0]["type"] == "OA":
+            return data_group_page(to_list.data_to_list(data_collection.find(
+                {"name": search_word})), False, "Showing data with name: " + search_word)
+        elif full_node[0]["type"] == "U":
+            return data_group_page(to_list.data_to_list(data_collection.find(
+                {"owner": search_word})), False, "Showing data with owner: " + search_word)
+
+        return home("Searched for: " + search_word)
+        # user_name = users_collection.find_one({"_id": ObjectId(user_id)})["username"]
+        # return data_group_page(to_list.data_to_list(data_collection.find({"owner": user_name})), True, False)
     except Exception as e:
         print(e)
         return e
