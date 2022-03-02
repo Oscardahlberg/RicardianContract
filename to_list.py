@@ -21,7 +21,9 @@ def data_dict_to_name_list(all_data):
 
 def access_perms_to_list(all_nego, status):
     full_table = []
+    print(all_nego)
     for nego in all_nego:
+        print(nego)
         if nego["status"] in status:
             full_table.append(access_perm_to_list(nego))
     return full_table
@@ -40,6 +42,29 @@ def access_perm_to_list(nego):
              nego["status"]]                         # 9
     return table
 
+def temporar(all_nego, status):
+    full_table = []
+    print(all_nego)
+    for nego in all_nego:
+        print(nego)
+        if nego["status"] in status:
+            full_table.append(tempo222(nego))
+    return full_table
+
+def tempo222(nego):
+    table = [nego["_id"],                            # 0
+             nego["type"],
+             nego["contract_name"],            
+             nego["demander"],                       # 1
+             nego["provider"],                       # 2
+             nego["creation_date"],                  # 3
+             nego["offer"],                          # 4
+             nego["request_details"]["item"],        # 5
+             nego["request_details"]["start_date"],  # 6
+             nego["request_details"]["end_date"],    # 7
+             nego["request_details"]["role"],        # 8
+             nego["status"]]                         # 9
+    return table
 
 def node_list(data_list):
 

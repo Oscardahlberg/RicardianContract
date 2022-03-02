@@ -1,0 +1,26 @@
+{% include 'navbar.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Join a group</title>
+</head>
+<body>
+
+{{user_groups}}
+<form action="/join_group" method="POST">
+
+    <select name="group_name" id="group_name">
+    <option value="">--Choose an existing group--</option>
+    {% for group_name in user_groups %}
+        <option value="{{group_name}}">{{ group_name }}</option>
+    {% endfor %}
+    </select><br>
+
+    <input type="submit" value="Submit contract">
+</form>
+
+
+
+</body>
+</html>

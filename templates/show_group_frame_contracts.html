@@ -1,0 +1,46 @@
+{% include 'navbar.html' %}
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    #one_data_div {
+        display: block;
+        border-radius: 1px;
+        background-color: lightgray;
+        padding: 10px;
+    }
+    #name {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+    #owner {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+    #permissions {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+</style>
+
+<h1>{{ title }}</h1>
+
+<body>
+<h1> Choose a frame contract to sign</h1>
+{% for frame_contract in frame_contracts %}
+    <div id = "one_data_div">
+
+        <p id="name">parties involved: <b>{{ frame_contract[2]}}</b></p>
+        <form action="/framecontract" method="POST">
+            <input name = "parent_name" type="hidden" value="{{frame_contract[2]}}">
+            <input name = "item" type="hidden" value="{{frame_contract[7]}}">
+            <input name = "role" type="hidden" value="{{frame_contract[10]}}">
+            <input type="submit" value="Submit contract">
+        </form>
+    </div>
+{% endfor %}
+
+
+
+</body>
+</html>

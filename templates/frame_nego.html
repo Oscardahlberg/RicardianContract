@@ -2,13 +2,13 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<h1>Create contract</h1>
+<h1>Join frame agreement between {{parent_name}}</h1>
 
 <body>
 
-<form action="/negotiate/parent" method="POST">
-    <label for="item">Item:</label><br>
-    <input type="text" id="item" name="item"><br><br>
+<form action="/negotiate/child" method="POST">
+    <label for="item">Item: </label><br>
+    <input type="text" readonly = "readonly" value = "{{item}}" id="item" name="item"><br><br>
 
     <label for="st_date">Start date:</label><br>
     <input type="datetime-local" id="st_date" name="st_date" ><br>
@@ -17,15 +17,16 @@
     <input type="datetime-local" id="end_date" name="end_date" ><br>
 
     <label for="role">Role:</label><br>
-    <input type="text" id="role" name="role"><br>
+    <input type="text" readonly = "readonly" value = "{{role}}" id="role" name="role"><br><br>
 
     <label for="offering">Offer:</label><br>
     <input type="text" id="offering" name="offering"><br><br>
- 
-    <label for="user_ammount">User amount:</label><br>
-    <input type="text" id="user_ammount" name="user_ammount"><br><br>
 
     <input type="submit" value="Submit contract">
+
+    <input type="hidden" value="{{parent_name}}" id="parent_name" name="parent_name"><br><br>
+
+    
 </form>
 
 </body>
