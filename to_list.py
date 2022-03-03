@@ -37,7 +37,35 @@ def access_perm_to_list(nego):
              nego["request_details"]["start_date"],  # 6
              nego["request_details"]["end_date"],    # 7
              nego["request_details"]["role"],        # 8
-             nego["status"]]                         # 9
+             nego["status"],                         # 9
+             nego["type"]]                           # 10
+    return table
+
+
+def temporar(all_nego):
+    full_table = []
+    print(all_nego)
+    for nego in all_nego:
+        print(nego)
+        if nego["status"] in "accepted":
+            full_table.append(tempo222(nego))
+    return full_table
+
+
+def tempo222(nego):
+    table = [nego["_id"],                               # 0
+             nego["type"],                              # 1
+             nego["contract_name"],                     # 2
+             nego["demander"],                          # 3
+             nego["provider"],                          # 4
+             nego["creation_date"],                     # 5
+             nego["offer"],                             # 6
+             nego["request_details"]["user_amount"],    # 7
+             nego["request_details"]["item"],           # 8
+             nego["request_details"]["start_date"],     # 9
+             nego["request_details"]["end_date"],       # 10
+             nego["request_details"]["role"],           # 11
+             nego["status"]]                            # 12
     return table
 
 
@@ -69,6 +97,3 @@ def child_list(data_list):
             links_name_list.append(link["child"]["name"])
 
     return links_name_list
-
-
-
