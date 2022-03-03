@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    #one_data_div {
+        display: block;
+        border-radius: 1px;
+        background-color: lightgray;
+        padding: 10px;
+    }
+    #name {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+    #owner {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+    #permissions {
+        font-size: 18px;
+        font-family: Garamond,serif;
+    }
+</style>
+
+<h1>{{ title }}</h1>
+
+<body>
+<h1> Choose a frame contract to sign</h1>
+{% for frame_contract in frame_contracts %}
+
+<div id = "one_data_div">
+    <p id="name">Frame contract between {{frame_contract[8]}} and {{frame_contract[11]}} with representants <b>{{ frame_contract[2]}}</b></p>
+
+    <form action="/framecontract/{{frame_contract[11]}}/{{frame_contract[2]}}" method="POST">
+        <input name = "parent_name" type="hidden" value="{{frame_contract[2]}}">
+        <input name = "item" type="hidden" value="{{frame_contract[8]}}">
+        <input name = "role" type="hidden" value="{{frame_contract[11]}}">
+        <input name = "st_date" type="hidden" value="{{frame_contract[9]}}">
+        <input name = "end_date" type="hidden" value="{{frame_contract[10]}}">
+        {% set max = frame_contract[7] | int %}
+        {% if current<= max %}
+        <input type="submit" value="Submit contract">
+        {% endif %}
+        Spots occupied: {{current}}/{{frame_contract[7]}}
+    </form>
+</div>
+
+{% endfor %}
+
+
+
+</body>
+</html>

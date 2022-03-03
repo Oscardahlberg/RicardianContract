@@ -7,7 +7,7 @@ import to_list
 
 PORT = 49000
 # Skapa en session och byt ut till din här!
-session = "8E0C14BE0BC543518BEEB6DCE58ECFB3"
+session = "2D1FF057B9BF4494AC4F9185B1A1A4E9"
 
 
 # Skapa en session!
@@ -154,6 +154,16 @@ def get_associations_OA_UA(node_name):
     return to_list.child_list(response.json()["entity"]), response.json()["message"]
 
 
+def get_node_parents(node_id):
+    url = "http://localhost:8080/pm/api/nodes/" \
+          "{}/parents?&session={}".format(node_id, session)
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.get(url, headers=headers)
+    print(response.json())
+    return to_list.node_list(response.json()["entity"]), response.json()["message"]
+
+
 def get_node_children(node_id):
     url = "http://localhost:8080/pm/api/nodes/" \
           "{}/children?&session={}".format(node_id, session)
@@ -176,15 +186,6 @@ def get_nodes_with_type(node_type):
     response = requests.get(url, headers=headers)
     print(response.json())
     return to_list.node_list(response.json()["entity"]), response.json()["message"]
-
-
-def get_all_associations():
-    url = "http://localhost:8080/pm/api/associations?&session={}".format(session)
-    headers = {'Content-Type': 'application/json'}
-
-    response = requests.get(url, headers=headers)
-    print(response.json())
-    return response.json()["entity"], response.json()["message"]
 
 
 def get_assignment(child_name, parent_name):
