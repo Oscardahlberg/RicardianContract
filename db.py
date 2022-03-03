@@ -12,6 +12,7 @@ import hashlib
 from user import User
 import json
 from bson import ObjectId
+import certifi
 
 # Change this to your mongodb cluster (in case you want to use it) for you to see and modify the database
 client = MongoClient(

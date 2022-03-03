@@ -52,6 +52,9 @@ def home(*argv):
 def login_page(*argv):
     return render_template("user/login.html", msg=argv[0]) if argv else render_template("user/login.html", msg="")
 
+@app.route('/navbar')
+def navbar():
+    return render_template("navbar.html")
 
 @app.route('/login', methods=['POST'])
 def login():
