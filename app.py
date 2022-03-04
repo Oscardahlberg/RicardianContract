@@ -53,6 +53,7 @@ def login_page(*argv):
     return render_template("user/login.html", msg=argv[0]) if argv else render_template("user/login.html", msg="")
 
 
+# Login with a created user
 @app.route('/login', methods=['POST'])
 def login():
     if current_user.is_authenticated:
@@ -73,12 +74,12 @@ def login():
     return home(message)
 
 
-# Create a new user
+# Render template for creating a new user
 @app.route('/create')
 def create_page(*argv):
     return render_template("user/signup.html", msg=argv[0]) if argv else render_template("user/signup.html", msg="")
 
-
+# Create a new user
 @app.route('/create', methods=['POST'])
 def create_user():
     if request.method == 'POST':
@@ -108,7 +109,6 @@ def logout():
     logout_user()
     return login_page("You have been logged out")
 
-
 @app.route("/search_for_user_group")
 @login_required
 def join_group(*args):
@@ -116,7 +116,7 @@ def join_group(*args):
     user_id = users_collection.find_one({"username": current_user.username})["_id"]
     return render_template("user/search_for_user_group.html", user_id=user_id, fixed=True, msg=msg)
 
-
+# Search for a user group to see what frame contracts an user can sign with
 @app.route("/search_for_user_group", methods=['POST'])
 @login_required
 def join_selected_group():
@@ -129,10 +129,10 @@ def join_selected_group():
     is_connected, msg = ngac.get_assignment(current_user.username, group_name)
     if msg != "Success":
         return home("Something wrong with node system: " + msg)
-    if msg:
+    if is_connected:
         return home("You are already apart of this group!")
 
-    frame_contracts = access_collection.find({"request_details.role": group_name, "status": "accepted"})
+    frame_contracts = access_collection.find({"type" : "parent", "request_details.role": group_name, "status": "accepted"})
     frame_contracts = to_list.temporar(frame_contracts)
     name_list, msg = ngac.get_node_children(ngac.get_id(group_name)[0])
     if msg != "Success":
@@ -190,18 +190,15 @@ def child_neg(data_group):
     except Exception as e:
         print(e)
 
-
+# Render template
 @app.route("/framecontract/<role>/<parent_name>", methods=['POST'])
 @login_required
 def frame(role, parent_name):
-    print(role)
-    print(parent_name)
     item = request.form.get("item")
-    print(item)
     return render_template("contract/frame_nego.html",
                            parent_name=parent_name, role=role, form=InfoForm(), fixed=True, item=item)
 
-
+# Show ongoing negotiations for the currently logged in user
 @app.route("/<user_id>/nego")
 @login_required
 def user_negotiations(user_id):
@@ -228,7 +225,7 @@ def user_negotiations(user_id):
     return render_template("contract/user_nego.html", nego_list=combined_list,
                            msg="Pending negotations", user=current_user.username, user_id=user_id)
 
-
+# Show completed negotiations for the current logged in user
 @app.route("/<user_id>/completed")
 @login_required
 def user_completed_negosiations(user_id):
@@ -257,7 +254,7 @@ def user_completed_negosiations(user_id):
                            user=current_user.username,
                            user_id=user_id)
 
-
+# Renders the contract creation page for provided data group
 @app.route("/negotiate/<data_group>/create")
 @login_required
 def new_nego(data_group):
@@ -265,7 +262,7 @@ def new_nego(data_group):
                            user_id=users_collection.find_one({"username": current_user.username})["_id"],
                            data_id=data_group, msg="", form=InfoForm(), fixed=True)
 
-
+# To make a counter offer on an existing negotiation
 @app.route("/negotiate/<req_id>/respond")
 @login_required
 def neg_page(req_id):
@@ -338,8 +335,7 @@ def accept(req_id):
                 req_details = nego['request_details']
                 user_grp = req_details['role']
                 data_grp = req_details['item']
-
-                if not ngac.get_id(user_grp)[0]:
+                if not ngac.get_id(user_grp)[0]: 
                     ngac.create_node(user_grp, 'UA', "")
 
                 if not ngac.get_assignment(req['demander'], user_grp)[0]:
@@ -383,7 +379,7 @@ def providers():
     available_data = negotiations(current_user.username)
     return available_data
 
-
+# Render the HTML page for creating new data
 @app.route("/new_data")
 @login_required
 def new_data_page():
@@ -392,7 +388,7 @@ def new_data_page():
 
     return render_template("data/new_dataset.html", data_groups=data_groups, user_id=user_id, fixed=True)
 
-
+# Create a new dataset 
 @app.route("/new_data", methods=['POST'])
 @login_required
 def new_data():
@@ -433,7 +429,7 @@ def new_data():
         print(e)
         return e
 
-
+# View all available data in front page, 
 @app.route("/search_data")
 def data_group_page(*argv):
     try:
@@ -443,7 +439,9 @@ def data_group_page(*argv):
         user_id = users_collection.find_one({"username": current_user.username})["_id"]
 
         user_data_page = False
+        #If argv is provided
         if argv:
+            #Save the arguments to data group and user_data_page
             if argv[0] and argv[1]:
                 data_groups = argv[0]
                 user_data_page = argv[1]
@@ -466,7 +464,7 @@ def data_group_page(*argv):
         print(e)
         return e
 
-
+#View the selected data group
 @app.route("/search_data/<data_group>")
 def data_page(data_group):
     try:
@@ -496,7 +494,7 @@ def data_page(data_group):
         print(e)
         return e
 
-
+# Used to search for data
 @app.route("/search_data/search", methods=["POST"])
 def data_search_page():
     try:
@@ -560,13 +558,15 @@ def users_data_access_page():
     except Exception as e:
         print(e)
         return e
-
-
+# Load contract template if they are not already loaded
 def load_template():
     try:
         get_template("parent_contract")
     except TypeError:
         add_template1()
+    try:
+        get_template("child_contract")
+    except TypeError:
         add_template()
 
 
@@ -577,5 +577,5 @@ def load_user(username):
 
 if __name__ == '__main__':
     load_template()
-    # ngac.sessions()
+    #ngac.sessions()
     app.run(port=8086, debug=True)

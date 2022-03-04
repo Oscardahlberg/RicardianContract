@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
+    <head>
+        {% include 'user/navbar.html' %}
+    </head>
 <style>
     #one_data_div {
         display: block;
@@ -22,9 +24,7 @@
     }
 </style>
 
-<h1>{{ title }}</h1>
-
-<body>
+<body style="background-color: #343A40">
 <h1> Choose a frame contract to sign</h1>
 {% for frame_contract in frame_contracts %}
 

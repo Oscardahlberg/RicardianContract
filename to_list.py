@@ -1,3 +1,4 @@
+# Convert the mongodb collections to a list
 
 def data_to_list(all_data):
     full_table = []

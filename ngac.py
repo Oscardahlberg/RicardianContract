@@ -6,11 +6,11 @@ import requests
 import to_list
 
 PORT = 49000
-# Skapa en session och byt ut till din här!
-session = "2D1FF057B9BF4494AC4F9185B1A1A4E9"
+# Create a session for NGAC rest API
+session = "7584FDDFA40148E6A0A5DA164D36C097"
 
 
-# Skapa en session!
+# Method to create a new session!
 def sessions():
     url = "http://localhost:8080/pm/api/sessions"
     headers = {'Content-Type': 'application/json'}
@@ -22,8 +22,8 @@ def sessions():
     return response.json()["entity"]
 
 
-# Skapa nod!
-# Den sista variabeln är frivilig, ex: create_node("namn", "U", "desc...")
+# Create a node in NGAC
+# The last variable is not needed, ex: create_node("namn", "U", "desc...")
 def create_node(node_name, node_type, desc, *argv):
     url = "http://localhost:8080/pm/api/nodes?session={}".format(session)
     headers = {'Content-Type': 'application/json'}
@@ -52,7 +52,7 @@ def create_node(node_name, node_type, desc, *argv):
     return response.json()["message"]
 
 
-# Hämta nodens ID baserat på nodens namn
+# Get the nodes Id based on its name
 def get_id(name, *args):
     url = "http://localhost:8080/pm/api/nodes?session={}&name={}".format(session, name)
     headers = {'Content-Type': 'application/json'}
@@ -75,7 +75,7 @@ def get_id(name, *args):
     return nId, response.json()["message"]
 
 
-# Skapa ett assignment mellan en child nod och en parent nod
+# Create an assignment between a childnode and a parentnode
 def make_assignment(node_name, group_name):
     node_id, msg = get_id(node_name)
     if msg != "Success":
@@ -97,7 +97,7 @@ def make_assignment(node_name, group_name):
     return response.json()["message"]
 
 
-# Gör en association, ex make_association("osci", "LTU_STUDENT", True, False)
+# Create an association, ex make_association("osci", "LTU_STUDENT", True, False)
 def make_association(user_group_name, data_group_name, r, w):
     user_group_id, msg = get_id(user_group_name)
     if msg != "Success":
@@ -125,7 +125,7 @@ def make_association(user_group_name, data_group_name, r, w):
     print(response.json())
     return response.json()["message"]
 
-
+# Get all associations connected to a User attribute node
 def get_associations_UA_OA(node_name):
     node_id, msg = get_id(node_name)
     if msg != "Success":
@@ -139,7 +139,7 @@ def get_associations_UA_OA(node_name):
     print(response.json())
     return to_list.parent_list(response.json()["entity"]), response.json()["message"]
 
-
+# Get all associations connected to a Object attribute node
 def get_associations_OA_UA(node_name):
     node_id, msg = get_id(node_name)
     if msg != "Success":
@@ -153,7 +153,7 @@ def get_associations_OA_UA(node_name):
     print(response.json())
     return to_list.child_list(response.json()["entity"]), response.json()["message"]
 
-
+# Get all parent nodes connected to a node
 def get_node_parents(node_id):
     url = "http://localhost:8080/pm/api/nodes/" \
           "{}/parents?&session={}".format(node_id, session)
@@ -163,7 +163,7 @@ def get_node_parents(node_id):
     print(response.json())
     return to_list.node_list(response.json()["entity"]), response.json()["message"]
 
-
+# Get all child nodes connected to a node
 def get_node_children(node_id):
     url = "http://localhost:8080/pm/api/nodes/" \
           "{}/children?&session={}".format(node_id, session)
@@ -173,7 +173,7 @@ def get_node_children(node_id):
     print(response.json())
     return to_list.node_list(response.json()["entity"]), response.json()["message"]
 
-
+# Get all nodes with the specified type
 def get_nodes_with_type(node_type):
     if node_type not in ("U", "UA", "O", "OA", "S", "PC"):
         print("Wrong node type, has to be one of U, UA, O, OA, S, PC")
@@ -187,7 +187,7 @@ def get_nodes_with_type(node_type):
     print(response.json())
     return to_list.node_list(response.json()["entity"]), response.json()["message"]
 
-
+# Get the assignment between the child node and parent node
 def get_assignment(child_name, parent_name):
     child_id, msg = get_id(child_name)
     if not child_id:
@@ -207,11 +207,3 @@ def get_assignment(child_name, parent_name):
     if response.json()["entity"]:
         return True, response.json()["message"]
     return False, response.json()["message"]
-
-
-# Kollar om username har en nod som heter username_seller
-def is_seller(username):
-    seller_id, msg = get_id(username + "_seller")
-    if seller_id == 0:
-        return "no nodes found"
-    return msg
