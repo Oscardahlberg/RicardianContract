@@ -7,7 +7,7 @@ import to_list
 
 PORT = 49000
 # Create a session for NGAC rest API
-session = "7584FDDFA40148E6A0A5DA164D36C097"
+session = "7EC36B6D2F5C48BC91B568EBDA9BFD79"
 
 
 # Method to create a new session!

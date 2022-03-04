@@ -19,10 +19,10 @@ from db import child, date_check, find_resources, get_provider, get_user, get_ne
     save_user, data_collection, add_template, add_template1, access_collection, new_dataset, new_permi, \
     negotiations_collection, offer, get_template
 import ngac
-from flask_navigation import Navigation
+#from flask_navigation import Navigation
 
 app = Flask(__name__)
-nav = Navigation(app)
+#nav = Navigation(app)
 dp = datepicker(app)
 Bootstrap(app)
 
@@ -544,21 +544,25 @@ def users_data_access_page():
     try:
         contracts = to_list.access_perms_to_list(
             access_collection.find({"demander": current_user.username, "status": "accepted"}), "accepted")
-
+        temp = []
+        print(contracts)
+        for lista in contracts:
+            temp.append(lista[5])
+        contracts = temp
+        contracts += to_list.data_dict_to_name_list(
+            data_collection.find({"owner": current_user.username}))
+        print(contracts)
         display_contract = []
-        for contract in contracts:
-            is_in_list = False
-            for contract1 in contracts[:contracts.index(contract)]:
-                if contract[5] == contract1[5]:
-                    is_in_list = True
-            if not is_in_list:
-                display_contract.append(contract)
+        # Removes duplicated by converting to dictionary and back to list (dict cant have dup keys)
+        contracts = list(dict.fromkeys(contracts))
 
         user_id = users_collection.find_one({"username": current_user.username})["_id"]
-        return render_template("data/user_accessible_data.html", contracts=display_contract, user_id=user_id)
+        return render_template("data/user_accessible_data.html", contracts=contracts, user_id=user_id)
     except Exception as e:
         print(e)
         return e
+
+
 # Load contract template if they are not already loaded
 def load_template():
     try:
