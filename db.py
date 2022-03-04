@@ -15,9 +15,9 @@ from bson import ObjectId
 import certifi
 
 # Change this to your mongodb cluster (in case you want to use it) for you to see and modify the database
-client = MongoClient(
-    "mongodb+srv://oscar:test123@cluster0.6hczg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-    ssl=True)
+
+ca = certifi.where()
+client = MongoClient("mongodb+srv://folke:folke@nego2.jn0tl.mongodb.net/test", ssl=True,tlsCAFile = ca)
 
 # This will allow you to access the databases, in case more databases are needed add them here, no need to create a
 # struture a priori like SQL, when data is added to a non existing database it will create it.

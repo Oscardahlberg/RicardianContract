@@ -7,7 +7,7 @@ import to_list
 
 PORT = 49000
 # Skapa en session och byt ut till din här!
-session = "2D1FF057B9BF4494AC4F9185B1A1A4E9"
+session = "E52CAC329D6647CA84F4838A43F99503"
 
 
 # Skapa en session!
@@ -191,11 +191,11 @@ def get_nodes_with_type(node_type):
 def get_assignment(child_name, parent_name):
     child_id, msg = get_id(child_name)
     if not child_id:
-        return False, "Error getting node_id" + msg
+        return False, msg
 
     parent_id, msg = get_id(parent_name)
     if not parent_id:
-        return False, "Error getting group_id" + msg
+        return False, msg
 
     url = "http://localhost:8080/pm/api/assignments?" \
           "session={}&childId={}&parentId={}".format(session, child_id, parent_id)
