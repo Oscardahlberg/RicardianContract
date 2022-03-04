@@ -153,7 +153,15 @@ def parent_neg(data_group):
         print(end_date)
         role = request.form.get('role')
         offering = request.form.get('offer')
-
+        node_id, message = ngac.get_id(role)
+        if message != "Success":
+            return home("Something wrong with node database: " + message)
+        if node_id:
+            is_connected, message = ngac.get_assignment(current_user.username, role)
+            if message != "Success":
+                return home("Something wrong with node database: " + message)
+            if not is_connected:
+                return new_nego(data_group)
         user_am = request.form.get('user_amount')
         # The following function may be changed to iterate if multiple roles are requested
         # neg_id=new_permi(current_user.username, item, st_date, end_date, role,offering)
