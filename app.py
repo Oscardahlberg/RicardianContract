@@ -179,7 +179,7 @@ def child_neg(data_group):
         st_date = request.form.get('startdate')
         end_date = request.form.get('enddate')
         role = request.form.get('role')
-        offer = request.form.get('offer')
+        offering = request.form.get('offer')
         # The following function may be changed to iterate if multiple roles are requested
         parent_name = request.form.get('parent_name')
         parent_contract = parent_info(parent_name)
@@ -192,7 +192,7 @@ def child_neg(data_group):
         else:
             return home("Dates does not match")
         neg_id = child('child', parent_contract['_id'], parent_name,
-                       current_user.username, data_group, st_date, end_date, role, offer)
+                       current_user.username, data_group, st_date, end_date, role, offering)
         print(neg_id)
         return home("Negotiation created! Wait for their response")
     except Exception as e:
@@ -542,27 +542,20 @@ def users_data_page():
 @app.route("/data_access")
 def users_data_access_page():
     try:
-        user_node_id, msg = ngac.get_id(current_user.username)
-        if msg != "Success":
-            return home("Something wrong with node database: " + msg)
-        user_groups, msg = ngac.get_node_parents(user_node_id)
-        if msg != "Success":
-            return home("Something wrong with node database: " + msg)
+        contracts = to_list.access_perms_to_list(
+            access_collection.find({"demander": current_user.username, "status": "accepted"}), "accepted")
 
-        if len(user_groups) == 0:
-            return home("You are not connected to any data")
-
-        # Right now only gets the data group names, could get contract info aswell
-        data_groups = []
-        for user_group in user_groups:
-            group_data, msg = ngac.get_associations_UA_OA(user_group)
-            if msg != "Success":
-                return home("Something wrong with node database: " + msg)
-            if len(group_data) != 0:
-                data_groups = data_groups + group_data
+        display_contract = []
+        for contract in contracts:
+            is_in_list = False
+            for contract1 in contracts[:contracts.index(contract)]:
+                if contract[5] == contract1[5]:
+                    is_in_list = True
+            if not is_in_list:
+                display_contract.append(contract)
 
         user_id = users_collection.find_one({"username": current_user.username})["_id"]
-        return render_template("data/user_accessible_data.html", data_groups=data_groups, user_id=user_id)
+        return render_template("data/user_accessible_data.html", contracts=display_contract, user_id=user_id)
     except Exception as e:
         print(e)
         return e
