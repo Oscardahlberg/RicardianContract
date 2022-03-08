@@ -32,9 +32,15 @@
             <td>{{ data_group[4] }}</td>
             <td>{{ data_group[5] }}</td>
             <td>
-                <a href="/search_data/{{ data_group[1] }}">
-                    View data
-                </a>
+                {% if not user_data_page %}
+                    <a href="/search_data/{{ data_group[1] }}/contract-true">
+                        View data
+                    </a>
+                {% else %}
+                    <a href="/search_data/{{ data_group[1] }}/contract-false">
+                        View data
+                    </a>
+                {% endif %}
             </td>
             {% if not user_data_page %}
                 <td>

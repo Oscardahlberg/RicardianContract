@@ -7,7 +7,7 @@ import to_list
 
 PORT = 49000
 # Create a session for NGAC rest API
-session = "7EC36B6D2F5C48BC91B568EBDA9BFD79"
+session = "7F7D93B734274120B00AB1C745500F6B"
 
 
 # Method to create a new session!
@@ -18,7 +18,6 @@ def sessions():
 
     response = requests.post(url, headers=headers, data=body)
     print(response.json()["entity"])
-    session = response.json()["entity"]
     return response.json()["entity"]
 
 
@@ -125,6 +124,7 @@ def make_association(user_group_name, data_group_name, r, w):
     print(response.json())
     return response.json()["message"]
 
+
 # Get all associations connected to a User attribute node
 def get_associations_UA_OA(node_name):
     node_id, msg = get_id(node_name)
@@ -138,6 +138,7 @@ def get_associations_UA_OA(node_name):
     response = requests.get(url, headers=headers)
     print(response.json())
     return to_list.parent_list(response.json()["entity"]), response.json()["message"]
+
 
 # Get all associations connected to a Object attribute node
 def get_associations_OA_UA(node_name):
@@ -153,6 +154,7 @@ def get_associations_OA_UA(node_name):
     print(response.json())
     return to_list.child_list(response.json()["entity"]), response.json()["message"]
 
+
 # Get all parent nodes connected to a node
 def get_node_parents(node_id):
     url = "http://localhost:8080/pm/api/nodes/" \
@@ -163,6 +165,7 @@ def get_node_parents(node_id):
     print(response.json())
     return to_list.node_list(response.json()["entity"]), response.json()["message"]
 
+
 # Get all child nodes connected to a node
 def get_node_children(node_id):
     url = "http://localhost:8080/pm/api/nodes/" \
@@ -172,6 +175,7 @@ def get_node_children(node_id):
     response = requests.get(url, headers=headers)
     print(response.json())
     return to_list.node_list(response.json()["entity"]), response.json()["message"]
+
 
 # Get all nodes with the specified type
 def get_nodes_with_type(node_type):
@@ -186,6 +190,7 @@ def get_nodes_with_type(node_type):
     response = requests.get(url, headers=headers)
     print(response.json())
     return to_list.node_list(response.json()["entity"]), response.json()["message"]
+
 
 # Get the assignment between the child node and parent node
 def get_assignment(child_name, parent_name):

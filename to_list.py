@@ -1,4 +1,4 @@
-# Convert the mongodb collections to a list
+# Convert types to lists
 
 def data_to_list(all_data):
     full_table = []
@@ -43,17 +43,17 @@ def access_perm_to_list(nego):
     return table
 
 
-def temporar(all_nego):
+def frame_contracts_to_list(all_nego):
     full_table = []
     print(all_nego)
     for nego in all_nego:
         print(nego)
         if nego["status"] in "accepted":
-            full_table.append(tempo222(nego))
+            full_table.append(frame_contract_to_list(nego))
     return full_table
 
 
-def tempo222(nego):
+def frame_contract_to_list(nego):
     table = [nego["_id"],                               # 0
              nego["type"],                              # 1
              nego["contract_name"],                     # 2

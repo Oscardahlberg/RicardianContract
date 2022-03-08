@@ -18,7 +18,7 @@
         <th scope="col">Modifiable: {{ data_group_info[0][4] }}</th>
         <th scope="col">Deletable: {{ data_group_info[0][5] }}</th>
         <th>
-            {% if username != data_group_info[0][2] and username %}
+            {% if can_contract and (username != data_group_info[0][2] and username) %}
                 <a href="/negotiate/{{ data_group_info[0][1] }}/create">
                     Create contract
                 </a>

@@ -19,10 +19,8 @@ from db import child, date_check, find_resources, get_provider, get_user, get_ne
     save_user, data_collection, add_template, add_template1, access_collection, new_dataset, new_permi, \
     negotiations_collection, offer, get_template
 import ngac
-#from flask_navigation import Navigation
 
 app = Flask(__name__)
-#nav = Navigation(app)
 dp = datepicker(app)
 Bootstrap(app)
 
@@ -79,6 +77,7 @@ def login():
 def create_page(*argv):
     return render_template("user/signup.html", msg=argv[0]) if argv else render_template("user/signup.html", msg="")
 
+
 # Create a new user
 @app.route('/create', methods=['POST'])
 def create_user():
@@ -109,6 +108,7 @@ def logout():
     logout_user()
     return login_page("You have been logged out")
 
+
 @app.route("/search_for_user_group")
 @login_required
 def join_group(*args):
@@ -116,7 +116,8 @@ def join_group(*args):
     user_id = users_collection.find_one({"username": current_user.username})["_id"]
     return render_template("user/search_for_user_group.html", user_id=user_id, fixed=True, msg=msg)
 
-# Search for a user group to see what frame contracts an user can sign with
+
+# Search for a user group to see what frame contracts a user can sign with
 @app.route("/search_for_user_group", methods=['POST'])
 @login_required
 def join_selected_group():
@@ -132,8 +133,9 @@ def join_selected_group():
     if is_connected:
         return home("You are already apart of this group!")
 
-    frame_contracts = access_collection.find({"type" : "parent", "request_details.role": group_name, "status": "accepted"})
-    frame_contracts = to_list.temporar(frame_contracts)
+    frame_contracts = access_collection.find(
+        {"type": "parent", "request_details.role": group_name, "status": "accepted"})
+    frame_contracts = to_list.frame_contracts_to_list(frame_contracts)
     name_list, msg = ngac.get_node_children(ngac.get_id(group_name)[0])
     if msg != "Success":
         return home("Something wrong with node database: " + msg)
@@ -198,6 +200,7 @@ def child_neg(data_group):
     except Exception as e:
         print(e)
 
+
 # Render template
 @app.route("/framecontract/<role>/<parent_name>", methods=['POST'])
 @login_required
@@ -206,7 +209,8 @@ def frame(role, parent_name):
     return render_template("contract/frame_nego.html",
                            parent_name=parent_name, role=role, form=InfoForm(), fixed=True, item=item)
 
-# Show ongoing negotiations for the currently logged in user
+
+# Show ongoing negotiations for the currently logged-in user
 @app.route("/<user_id>/nego")
 @login_required
 def user_negotiations(user_id):
@@ -233,7 +237,8 @@ def user_negotiations(user_id):
     return render_template("contract/user_nego.html", nego_list=combined_list,
                            msg="Pending negotations", user=current_user.username, user_id=user_id)
 
-# Show completed negotiations for the current logged in user
+
+# Show completed negotiations for the current logged-in user
 @app.route("/<user_id>/completed")
 @login_required
 def user_completed_negosiations(user_id):
@@ -262,6 +267,7 @@ def user_completed_negosiations(user_id):
                            user=current_user.username,
                            user_id=user_id)
 
+
 # Renders the contract creation page for provided data group
 @app.route("/negotiate/<data_group>/create")
 @login_required
@@ -269,6 +275,7 @@ def new_nego(data_group):
     return render_template("contract/nego.html",
                            user_id=users_collection.find_one({"username": current_user.username})["_id"],
                            data_id=data_group, msg="", form=InfoForm(), fixed=True)
+
 
 # To make a counter offer on an existing negotiation
 @app.route("/negotiate/<req_id>/respond")
@@ -343,7 +350,7 @@ def accept(req_id):
                 req_details = nego['request_details']
                 user_grp = req_details['role']
                 data_grp = req_details['item']
-                if not ngac.get_id(user_grp)[0]: 
+                if not ngac.get_id(user_grp)[0]:
                     ngac.create_node(user_grp, 'UA', "")
 
                 if not ngac.get_assignment(req['demander'], user_grp)[0]:
@@ -387,6 +394,7 @@ def providers():
     available_data = negotiations(current_user.username)
     return available_data
 
+
 # Render the HTML page for creating new data
 @app.route("/new_data")
 @login_required
@@ -395,6 +403,7 @@ def new_data_page():
     user_id = users_collection.find_one({"username": current_user.username})["_id"]
 
     return render_template("data/new_dataset.html", data_groups=data_groups, user_id=user_id, fixed=True)
+
 
 # Create a new dataset 
 @app.route("/new_data", methods=['POST'])
@@ -437,6 +446,7 @@ def new_data():
         print(e)
         return e
 
+
 # View all available data in front page, 
 @app.route("/search_data")
 def data_group_page(*argv):
@@ -447,10 +457,10 @@ def data_group_page(*argv):
         user_id = users_collection.find_one({"username": current_user.username})["_id"]
 
         user_data_page = False
-        #If argv is provided
+        # If argv is provided
         if argv:
-            #Save the arguments to data group and user_data_page
-            if argv[0] and argv[1]:
+            # Save the arguments to data group and user_data_page
+            if argv[1]:
                 data_groups = argv[0]
                 user_data_page = argv[1]
             elif argv[0]:
@@ -472,9 +482,10 @@ def data_group_page(*argv):
         print(e)
         return e
 
-#View the selected data group
-@app.route("/search_data/<data_group>")
-def data_page(data_group):
+
+# View the selected data group
+@app.route("/search_data/<data_group>/<can_contract>")
+def data_page(data_group, can_contract):
     try:
         data_group_id, msg = ngac.get_id(data_group)
         if msg != "Success":
@@ -494,13 +505,18 @@ def data_page(data_group):
 
         data_group_info = to_list.data_to_list([data_collection.find_one({"name": data_group})])
 
+        # So that you can't make a contract when viewing the data you have access to
+        can_contract = False if can_contract == "contract-false" else True
+
         return render_template("data/datasets.html",
                                data_list=data_names,
                                data_group_info=data_group_info,
-                               username=username)
+                               username=username,
+                               can_contract=can_contract)
     except Exception as e:
         print(e)
         return e
+
 
 # Used to search for data
 @app.route("/search_data/search", methods=["POST"])
@@ -544,20 +560,34 @@ def users_data_access_page():
     try:
         contracts = to_list.access_perms_to_list(
             access_collection.find({"demander": current_user.username, "status": "accepted"}), "accepted")
+
         temp = []
-        print(contracts)
-        for lista in contracts:
-            temp.append(lista[5])
+        today = date.today()
+        for contract_list in contracts:
+
+            # Checks if the contract is active, first part is if it has started
+            # Second part is so that it hasn't run out
+            # Does not check hour or minute since it's not stored in the contracts
+            if today.day <= int(contract_list[7][8:]) \
+                    and today.month <= int(contract_list[7][5:7])\
+                    and today.year <= int(contract_list[7][:4]):
+                if today.day >= int(contract_list[6][8:])\
+                        and today.month >= int(contract_list[6][5:7])\
+                        and today.year >= int(contract_list[6][:4]):
+                    temp.append(contract_list[5])
+
         contracts = temp
         contracts += to_list.data_dict_to_name_list(
             data_collection.find({"owner": current_user.username}))
-        print(contracts)
-        display_contract = []
-        # Removes duplicated by converting to dictionary and back to list (dict cant have dup keys)
+
+        # Removes duplicated by converting to dictionary and back to list (dict can't have dup keys)
         contracts = list(dict.fromkeys(contracts))
 
-        user_id = users_collection.find_one({"username": current_user.username})["_id"]
-        return render_template("data/user_accessible_data.html", contracts=contracts, user_id=user_id)
+        dataset_list = []
+        for dataset in contracts:
+            dataset_list += to_list.data_to_list([data_collection.find_one({"name": dataset})])
+
+        return data_group_page(dataset_list, True, False)
     except Exception as e:
         print(e)
         return e
@@ -575,6 +605,21 @@ def load_template():
         add_template()
 
 
+# Runs a simple test to see if both the NGAC database and
+# mongoDB are able to handle GETs
+def databases_is_running():
+    _, msg = ngac.get_id("super")
+    if msg != "Success":
+        print("Cannot reach NGAC database")
+        return False
+    try:
+        get_template("parent_contract")
+    except TypeError:
+        print("Cannot reach mongoDB")
+        return False
+    return True
+
+
 @login_manager.user_loader
 def load_user(username):
     return get_user(username)
@@ -582,5 +627,7 @@ def load_user(username):
 
 if __name__ == '__main__':
     load_template()
-    #ngac.sessions()
-    app.run(port=8086, debug=True)
+    # Run ngac.sessions() if you're running neo4j for the first time or is resetting to get session key
+    # ngac.sessions()
+    if databases_is_running():
+        app.run(port=8086, debug=True)
