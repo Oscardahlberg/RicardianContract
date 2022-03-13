@@ -1,53 +1,57 @@
+
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        {% include 'user/navbar.html' %}
-    </head>
-<style>
-    #one_data_div {
-        display: block;
-        border-radius: 1px;
-        background-color: lightgray;
-        padding: 10px;
-    }
-    #name {
-        font-size: 18px;
-        font-family: Garamond,serif;
-    }
-    #owner {
-        font-size: 18px;
-        font-family: Garamond,serif;
-    }
-    #permissions {
-        font-size: 18px;
-        font-family: Garamond,serif;
-    }
-</style>
-
+<head>
+    {% include 'user/navbar.html' %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+          rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+          crossorigin="anonymous">
+</head>
 <body style="background-color: #343A40">
-<h1> Choose a frame contract to sign</h1>
-{% for frame_contract in frame_contracts %}
 
-<div id = "one_data_div">
-    <p id="name">Frame contract between {{frame_contract[8]}} and {{frame_contract[11]}} with representants <b>{{ frame_contract[2]}}</b></p>
+<table class="table table-dark table-striped">
+    <thead>
+    <tr>
+        <th scope="col">Contract between</th>
+        <th scope="col">Contract for</th>
+        <th scope="col">Group name</th>
+        <th scope="col">Start date</th>
+        <th scope="col">End date</th>
+        <th scope="col">Available spots</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
 
-    <form action="/framecontract/{{frame_contract[11]}}/{{frame_contract[2]}}" method="POST">
-        <input name = "parent_name" type="hidden" value="{{frame_contract[2]}}">
-        <input name = "item" type="hidden" value="{{frame_contract[8]}}">
-        <input name = "role" type="hidden" value="{{frame_contract[11]}}">
-        <input name = "st_date" type="hidden" value="{{frame_contract[9]}}">
-        <input name = "end_date" type="hidden" value="{{frame_contract[10]}}">
-        {% set max = frame_contract[7] | int %}
-        {% if current<= max %}
-        <input type="submit" value="Submit contract">
-        {% endif %}
-        Spots occupied: {{current}}/{{frame_contract[7]}}
-    </form>
-</div>
+    {% for frame_contract in frame_contracts %}
+    <tr>
+        <td>{{ frame_contract[2] }}</td>
+        <td>{{ frame_contract[8] }}</td>
+        <td>{{ frame_contract[11] }}</td>
+        <td>{{ frame_contract[9] }}</td>
+        <td>{{ frame_contract[10] }}</td>
+        <td>{{ current }} / {{ frame_contract[7] }}</td>
+        <td>
+            {% set max = frame_contract[7] | int %}
+            {% if current <= max %}
+                <form action="/framecontract/{{frame_contract[11]}}/{{frame_contract[2]}}" method="POST">
+                    <input name="parent_name" type="hidden" value="{{frame_contract[2]}}">
+                    <input name="item" type="hidden" value="{{frame_contract[8]}}">
+                    <input name="role" type="hidden" value="{{frame_contract[11]}}">
+                    <input name="st_date" type="hidden" value="{{frame_contract[9]}}">
+                    <input name="end_date" type="hidden" value="{{frame_contract[10]}}">
+                    <input type="submit" value="Apply for access">
+                </form>
+            {% else %}
+                <p>
+                    Contract is full
+                </p>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
 
-{% endfor %}
-
-
+    </tbody>
+</table>
 
 </body>
-</html>
